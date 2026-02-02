@@ -1,6 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Types for our database
+
+// Phase 4: Skill levels and complexity
+export type SkillLevel = 'junior' | 'mid' | 'senior' | 'lead';
+export type TaskComplexity = 'simple' | 'medium' | 'complex' | 'critical';
+
+// Phase 5: Shadowing modes
+export type ShadowingMode = 'none' | 'recommended' | 'required';
+
+// Phase 6: Review status
+export type ReviewStatus = 'not_required' | 'pending' | 'approved' | 'changes_requested';
+
+// Phase 5: Task dependencies
+export interface TaskDependency {
+  id: string;
+  task_id: string;
+  depends_on_task_id: string;
+  created_at: string;
+}
+
 export interface Agent {
   id: string;
   display_name: string;
@@ -10,6 +29,8 @@ export interface Agent {
   capabilities: string[];
   is_active: boolean;
   last_seen: string | null;
+  skill_level: SkillLevel;
+  model: string;
 }
 
 export interface Project {
@@ -30,6 +51,8 @@ export interface Project {
     auto_flag_instant_consensus: boolean;
     notify_channel: string | null;
   };
+  token_budget: number;
+  tokens_used: number;
 }
 
 export interface Sprint {
@@ -70,6 +93,15 @@ export interface Task {
   updated_at: string;
   completed_at: string | null;
   notes: string | null;
+  complexity: TaskComplexity;
+  tokens_consumed: number;
+  // Phase 5: Shadowing
+  shadowing: ShadowingMode;
+  // Phase 6: Review workflow
+  requires_review: boolean;
+  reviewer_id: string | null;
+  review_status: ReviewStatus;
+  review_notes: string | null;
 }
 
 export interface ActivityLog {
@@ -81,6 +113,78 @@ export interface ActivityLog {
   human_id: string | null;
   details: Record<string, unknown> | null;
   created_at: string;
+}
+
+export type ProposalStatus = 'open' | 'debating' | 'consensus' | 'escalated' | 'approved' | 'rejected';
+export type ProposalType = 'task_creation' | 'sprint_plan' | 'architecture_decision' | 'resource_allocation' | 'priority_change' | 'other';
+export type VoteType = 'approve' | 'reject' | 'abstain';
+export type SycophancyIndicator = 'instant_high_consensus' | 'echo_language' | 'flip_without_reasoning' | 'no_substantive_concerns' | 'copied_conclusion';
+
+export interface Proposal {
+  id: string;
+  project_id: string;
+  proposal_type: ProposalType;
+  title: string;
+  content: Record<string, unknown>;
+  proposed_by: string | null;
+  proposed_at: string;
+  status: ProposalStatus;
+  resolved_at: string | null;
+  resolution_notes: string | null;
+  final_decision: Record<string, unknown> | null;
+  // Phase 6: Outcome tracking for debates
+  outcome_worked: boolean | null;
+  outcome_tagged_at: string | null;
+  outcome_tagged_by: string | null;
+}
+
+export interface IndependentOpinion {
+  id: string;
+  proposal_id: string;
+  agent_id: string;
+  opinion: {
+    vote: VoteType;
+    reasoning: string;
+    concerns: string[];
+  };
+  confidence: number;
+  generated_at: string;
+  saw_other_opinions_at: string | null;
+}
+
+export interface Critique {
+  id: string;
+  proposal_id: string;
+  critic_agent_id: string;
+  target_agent_id: string;
+  concerns: string[];
+  suggestions: string[] | null;
+  agrees_after_concerns: boolean | null;
+  agreement_reasoning: string | null;
+  created_at: string;
+}
+
+export interface DebateRound {
+  id: string;
+  proposal_id: string;
+  round_number: number;
+  agent_id: string;
+  position: string;
+  reasoning: string;
+  confidence: number;
+  created_at: string;
+}
+
+export interface SycophancyFlag {
+  id: string;
+  proposal_id: string;
+  indicator_type: SycophancyIndicator;
+  details: Record<string, unknown> | null;
+  detected_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  was_false_positive: boolean | null;
+  resolution_notes: string | null;
 }
 
 // Initialize Supabase client
@@ -196,4 +300,301 @@ export function subscribeToActivity(callback: (activity: ActivityLog) => void) {
       (payload) => callback(payload.new as ActivityLog)
     )
     .subscribe();
+}
+
+export async function createSprint(sprint: {
+  project_id: string;
+  name: string;
+  number: number;
+  status: Sprint['status'];
+  planned_start: string | null;
+  planned_end: string | null;
+}) {
+  const { data, error } = await supabase
+    .from('sprints')
+    .insert({
+      ...sprint,
+      acceptance_criteria: [],
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Sprint;
+}
+
+export async function updateTaskSprint(taskId: string, sprintId: string | null) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ sprint_id: sprintId, updated_at: new Date().toISOString() })
+    .eq('id', taskId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Task;
+}
+
+// Proposal helpers
+export async function getProjectProposals(projectId: string) {
+  const { data, error } = await supabase
+    .from('proposals')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('proposed_at', { ascending: false });
+
+  if (error) throw error;
+  return data as Proposal[];
+}
+
+export async function createProposal(proposal: {
+  project_id: string;
+  proposal_type: ProposalType;
+  title: string;
+  content: Record<string, unknown>;
+  proposed_by: string | null;
+}) {
+  const { data, error } = await supabase
+    .from('proposals')
+    .insert({
+      ...proposal,
+      status: 'open',
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Proposal;
+}
+
+export async function getProposalOpinions(proposalId: string) {
+  const { data, error } = await supabase
+    .from('independent_opinions')
+    .select('*')
+    .eq('proposal_id', proposalId)
+    .order('generated_at', { ascending: true });
+
+  if (error) throw error;
+  return data as IndependentOpinion[];
+}
+
+export async function submitOpinion(opinion: {
+  proposal_id: string;
+  agent_id: string;
+  opinion: { vote: VoteType; reasoning: string; concerns: string[] };
+  confidence: number;
+}) {
+  const { data, error } = await supabase
+    .from('independent_opinions')
+    .insert(opinion)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as IndependentOpinion;
+}
+
+export async function getDebateRounds(proposalId: string) {
+  const { data, error } = await supabase
+    .from('debate_rounds')
+    .select('*')
+    .eq('proposal_id', proposalId)
+    .order('round_number', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data as DebateRound[];
+}
+
+export async function createDebateRound(round: {
+  proposal_id: string;
+  round_number: number;
+  agent_id: string;
+  position: string;
+  reasoning: string;
+  confidence: number;
+}) {
+  const { data, error } = await supabase
+    .from('debate_rounds')
+    .insert(round)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as DebateRound;
+}
+
+export async function getSycophancyFlags(proposalId: string) {
+  const { data, error } = await supabase
+    .from('sycophancy_flags')
+    .select('*')
+    .eq('proposal_id', proposalId)
+    .order('detected_at', { ascending: false });
+
+  if (error) throw error;
+  return data as SycophancyFlag[];
+}
+
+export async function updateProposalStatus(proposalId: string, status: ProposalStatus) {
+  const { data, error } = await supabase
+    .from('proposals')
+    .update({
+      status,
+      resolved_at: ['consensus', 'escalated', 'approved', 'rejected'].includes(status)
+        ? new Date().toISOString()
+        : null
+    })
+    .eq('id', proposalId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Proposal;
+}
+
+// ============================================
+// Phase 5: Task Dependencies
+// ============================================
+
+export async function getTaskDependencies(projectId: string) {
+  const { data, error } = await supabase
+    .from('task_dependencies')
+    .select(`
+      *,
+      task:tasks!task_dependencies_task_id_fkey(id, title, status, project_id),
+      depends_on:tasks!task_dependencies_depends_on_task_id_fkey(id, title, status, project_id)
+    `)
+    .eq('task.project_id', projectId);
+
+  if (error) throw error;
+  return data as TaskDependency[];
+}
+
+export async function addTaskDependency(taskId: string, dependsOnTaskId: string) {
+  const { data, error } = await supabase
+    .from('task_dependencies')
+    .insert({ task_id: taskId, depends_on_task_id: dependsOnTaskId })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as TaskDependency;
+}
+
+export async function removeTaskDependency(taskId: string, dependsOnTaskId: string) {
+  const { error } = await supabase
+    .from('task_dependencies')
+    .delete()
+    .eq('task_id', taskId)
+    .eq('depends_on_task_id', dependsOnTaskId);
+
+  if (error) throw error;
+}
+
+export async function getTaskDependenciesForTask(taskId: string) {
+  const { data, error } = await supabase
+    .from('task_dependencies')
+    .select('*')
+    .or(`task_id.eq.${taskId},depends_on_task_id.eq.${taskId}`);
+
+  if (error) throw error;
+  return data as TaskDependency[];
+}
+
+// ============================================
+// Phase 6: Review Workflow
+// ============================================
+
+export async function getReviewQueue(reviewerId?: string) {
+  let query = supabase
+    .from('tasks')
+    .select('*')
+    .eq('requires_review', true)
+    .eq('review_status', 'pending')
+    .order('updated_at', { ascending: false });
+
+  if (reviewerId) {
+    query = query.eq('reviewer_id', reviewerId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as Task[];
+}
+
+export async function updateTaskReview(
+  taskId: string,
+  reviewStatus: ReviewStatus,
+  reviewNotes?: string
+) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      review_status: reviewStatus,
+      review_notes: reviewNotes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', taskId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Task;
+}
+
+export async function assignReviewer(taskId: string, reviewerId: string) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      reviewer_id: reviewerId,
+      requires_review: true,
+      review_status: 'pending',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', taskId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Task;
+}
+
+// ============================================
+// Phase 6: Debate Outcome Tracking
+// ============================================
+
+export async function tagDebateOutcome(
+  proposalId: string,
+  worked: boolean,
+  taggedBy: string
+) {
+  const { data, error } = await supabase
+    .from('proposals')
+    .update({
+      outcome_worked: worked,
+      outcome_tagged_at: new Date().toISOString(),
+      outcome_tagged_by: taggedBy,
+    })
+    .eq('id', proposalId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Proposal;
+}
+
+export async function getDebateHistory(projectId?: string) {
+  let query = supabase
+    .from('proposals')
+    .select('*')
+    .in('status', ['consensus', 'approved', 'rejected'])
+    .order('resolved_at', { ascending: false });
+
+  if (projectId) {
+    query = query.eq('project_id', projectId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as Proposal[];
 }

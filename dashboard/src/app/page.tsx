@@ -2,20 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getProjects, getAgents, Project, Agent } from '@/lib/supabase';
+import { getProjects, getAgents, Project, Agent, supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/hooks';
+import { sortAgentsBySkillLevel, getModelDisplayName } from '@/lib/agents';
+import { SkillLevelBadge } from '@/components/SkillLevelBadge';
+import { ActivityFeed } from '@/components/ActivityFeed';
 
 const statusColors: Record<Project['status'], string> = {
-  planning: 'bg-yellow-100 text-yellow-800',
-  active: 'bg-green-100 text-green-800',
-  paused: 'bg-gray-100 text-gray-800',
-  completed: 'bg-blue-100 text-blue-800',
-  archived: 'bg-gray-200 text-gray-600',
+  planning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+  active: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+  paused: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+  archived: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
 };
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     async function fetchData() {
@@ -26,13 +31,25 @@ export default function Dashboard() {
         ]);
         setProjects(projectsData);
         setAgents(agentsData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      } catch {
+        // Failed to fetch data - will show empty state
       } finally {
         setLoading(false);
       }
     }
     fetchData();
+
+    // Subscribe to project changes
+    const projectSub = supabase
+      .channel('projects-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        getProjects().then(setProjects);
+      })
+      .subscribe();
+
+    return () => {
+      projectSub.unsubscribe();
+    };
   }, []);
 
   const getAgentName = (id: string | null) => {
@@ -68,6 +85,27 @@ export default function Dashboard() {
                 {agents.filter((a) => a.agent_type === 'pm').length} PMs •{' '}
                 {agents.filter((a) => a.agent_type === 'specialist').length} Specialists
               </span>
+              <button
+                onClick={() => {
+                  const event = new KeyboardEvent('keydown', {
+                    key: 'k',
+                    metaKey: true,
+                    bubbles: true,
+                  });
+                  document.dispatchEvent(event);
+                }}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors border border-zinc-200 dark:border-zinc-700"
+              >
+                <span>Search</span>
+                <kbd className="px-1.5 py-0.5 text-xs bg-zinc-200 dark:bg-zinc-700 rounded font-mono">⌘K</kbd>
+              </button>
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
             </div>
           </div>
         </div>
@@ -108,6 +146,14 @@ export default function Dashboard() {
           Projects
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {projects.length === 0 && !loading && (
+            <div className="col-span-full text-center py-12 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <div className="text-zinc-500 dark:text-zinc-400">No projects yet.</div>
+              <div className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                Create a project via the CLI to get started.
+              </div>
+            </div>
+          )}
           {projects.map((project) => (
             <Link
               key={project.id}
@@ -155,33 +201,57 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Agents Section */}
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mt-12 mb-4">
-          Agent Registry
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {agents.map((agent) => (
-            <div
-              key={agent.id}
-              className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4"
-            >
-              <div className="flex items-center gap-3">
+        {/* Two-column layout: Agents + Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-12">
+          {/* Agents Section */}
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+              Agent Registry
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {sortAgentsBySkillLevel(agents).map((agent) => (
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    agent.is_active ? 'bg-green-500' : 'bg-gray-400'
-                  }`}
-                />
-                <div>
-                  <div className="font-medium text-zinc-900 dark:text-white">
-                    {agent.display_name}
-                  </div>
-                  <div className="text-xs text-zinc-500">
-                    {agent.mcu_codename} • {agent.role}
+                  key={agent.id}
+                  className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                        agent.is_active ? 'bg-green-500' : 'bg-gray-400'
+                      }`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-zinc-900 dark:text-white">
+                          {agent.mcu_codename}
+                        </span>
+                        <SkillLevelBadge level={agent.skill_level} size="sm" />
+                      </div>
+                      <div className="text-xs text-zinc-500 mt-1 truncate" title={agent.role}>
+                        {agent.role}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-0.5" title={agent.model}>
+                        {getModelDisplayName(agent.model)}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
+              {agents.length === 0 && !loading && (
+                <div className="col-span-full text-center py-8 text-zinc-500 dark:text-zinc-400 text-sm">
+                  No agents registered yet.
+                </div>
+              )}
             </div>
-          ))}
+          </div>
+
+          {/* Activity Feed */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+              Recent Activity
+            </h2>
+            <ActivityFeed limit={15} />
+          </div>
         </div>
       </main>
     </div>
