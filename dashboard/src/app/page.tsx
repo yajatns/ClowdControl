@@ -83,6 +83,12 @@ export default function Dashboard() {
             <div className="flex items-center gap-4">
               <nav className="flex items-center gap-2 mr-4">
                 <Link
+                  href="/proposals"
+                  className="px-3 py-1.5 text-sm font-medium rounded-md bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-900 transition-colors"
+                >
+                  📋 Proposals
+                </Link>
+                <Link
                   href="/debates"
                   className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                 >
