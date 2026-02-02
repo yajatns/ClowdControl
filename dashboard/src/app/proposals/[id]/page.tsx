@@ -281,12 +281,13 @@ export default function ProposalDetailPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        {/* Project Creation Approval - Simple approve/reject for humans */}
+        {/* Project Creation Approval - Full review with PM selection */}
         {(proposal.content as any)?.type === 'project_creation' && proposal.status === 'open' && (
           <ProjectApprovalCard 
-            proposal={proposal} 
-            onApprove={async () => {
-              // Create the project
+            proposal={proposal}
+            agents={agents}
+            onApprove={async (selectedPmId: string) => {
+              // Create the project with selected PM
               const projectData = (proposal.content as any).project;
               const { data: newProject, error } = await supabase
                 .from('projects')
@@ -296,7 +297,7 @@ export default function ProposalDetailPage() {
                   status: 'active',
                   owner_type: projectData.owner_type || 'human',
                   owner_ids: ['yajat'],
-                  current_pm_id: projectData.pm_id || 'chhotu',
+                  current_pm_id: selectedPmId,
                   tags: [],
                   settings: projectData.settings || {
                     require_dual_pm_consensus: false,
@@ -520,24 +521,35 @@ export default function ProposalDetailPage() {
   );
 }
 
-// Simple approval card for project creation proposals
+// Full approval card for project creation proposals with PM selection and plan
 function ProjectApprovalCard({ 
   proposal, 
   onApprove, 
-  onReject 
+  onReject,
+  agents,
 }: { 
   proposal: Proposal; 
-  onApprove: () => Promise<void>; 
+  onApprove: (pmId: string) => Promise<void>; 
   onReject: () => Promise<void>;
+  agents: Agent[];
 }) {
   const [loading, setLoading] = useState(false);
+  const [selectedPm, setSelectedPm] = useState<string>('');
   const content = proposal.content as any;
   const project = content?.project || {};
+  const plan = content?.plan || project.plan || null;
+
+  // Initialize selected PM from proposal
+  useEffect(() => {
+    setSelectedPm(project.pm_id || 'chhotu');
+  }, [project.pm_id]);
+
+  const pmAgents = agents.filter(a => a.agent_type === 'pm');
 
   const handleApprove = async () => {
     setLoading(true);
     try {
-      await onApprove();
+      await onApprove(selectedPm);
     } finally {
       setLoading(false);
     }
@@ -554,65 +566,102 @@ function ProjectApprovalCard({
 
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-yellow-200 dark:border-yellow-800 p-6 mb-6">
-      <div className="flex items-start gap-4">
+      {/* Header */}
+      <div className="flex items-start gap-4 mb-6">
         <div className="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/50 flex items-center justify-center shrink-0">
           <span className="text-2xl">📁</span>
         </div>
-        <div className="flex-1">
+        <div>
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
             New Project Request
           </h2>
-          <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
-            An agent wants to create a new project. Review and approve or reject.
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+            Review the project details and approve to create it.
           </p>
-          
-          <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 mb-4">
-            <dl className="space-y-2 text-sm">
-              <div className="flex">
-                <dt className="w-24 text-zinc-500 dark:text-zinc-400">Name:</dt>
-                <dd className="font-medium text-zinc-900 dark:text-white">{project.name || 'Unnamed'}</dd>
-              </div>
-              {project.description && (
-                <div className="flex">
-                  <dt className="w-24 text-zinc-500 dark:text-zinc-400">Description:</dt>
-                  <dd className="text-zinc-700 dark:text-zinc-300">{project.description}</dd>
-                </div>
-              )}
-              <div className="flex">
-                <dt className="w-24 text-zinc-500 dark:text-zinc-400">PM:</dt>
-                <dd className="text-zinc-700 dark:text-zinc-300">@{project.pm_id || 'chhotu'}</dd>
-              </div>
-              <div className="flex">
-                <dt className="w-24 text-zinc-500 dark:text-zinc-400">Proposed by:</dt>
-                <dd className="text-zinc-700 dark:text-zinc-300">@{proposal.proposed_by}</dd>
-              </div>
-            </dl>
+        </div>
+      </div>
+      
+      {/* Project Details */}
+      <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 mb-4">
+        <h3 className="font-medium text-zinc-900 dark:text-white mb-3">Project Details</h3>
+        <dl className="space-y-3 text-sm">
+          <div>
+            <dt className="text-zinc-500 dark:text-zinc-400 mb-1">Name</dt>
+            <dd className="font-medium text-lg text-zinc-900 dark:text-white">{project.name || 'Unnamed'}</dd>
           </div>
+          {project.description && (
+            <div>
+              <dt className="text-zinc-500 dark:text-zinc-400 mb-1">Description</dt>
+              <dd className="text-zinc-700 dark:text-zinc-300">{project.description}</dd>
+            </div>
+          )}
+          <div>
+            <dt className="text-zinc-500 dark:text-zinc-400 mb-1">Proposed by</dt>
+            <dd className="text-zinc-700 dark:text-zinc-300">@{proposal.proposed_by}</dd>
+          </div>
+        </dl>
+      </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleApprove}
-              disabled={loading}
-              className="bg-green-600 hover:bg-green-500 text-white"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-4 h-4" />
-              )}
-              Approve & Create Project
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleReject}
-              disabled={loading}
-              className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950"
-            >
-              <XCircle className="w-4 h-4" />
-              Reject
-            </Button>
+      {/* Plan Section */}
+      {plan && (
+        <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 mb-4 border border-blue-200 dark:border-blue-800">
+          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
+            📋 Proposed Plan
+          </h3>
+          <div className="text-sm text-blue-800 dark:text-blue-200 whitespace-pre-wrap">
+            {typeof plan === 'string' ? plan : JSON.stringify(plan, null, 2)}
           </div>
         </div>
+      )}
+
+      {/* PM Selection */}
+      <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 mb-6">
+        <h3 className="font-medium text-zinc-900 dark:text-white mb-3">Assign Project Manager</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {pmAgents.map((agent) => (
+            <button
+              key={agent.id}
+              onClick={() => setSelectedPm(agent.id)}
+              className={`p-3 rounded-lg border-2 text-left transition-all ${
+                selectedPm === agent.id
+                  ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
+                  : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+              }`}
+            >
+              <div className="font-medium text-zinc-900 dark:text-white">
+                {selectedPm === agent.id && '✓ '}{agent.display_name}
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                @{agent.id} • {agent.mcu_codename}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <Button
+          onClick={handleApprove}
+          disabled={loading || !selectedPm}
+          className="bg-green-600 hover:bg-green-500 text-white flex-1"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4" />
+          )}
+          Approve & Create Project
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleReject}
+          disabled={loading}
+          className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950"
+        >
+          <XCircle className="w-4 h-4" />
+          Reject
+        </Button>
       </div>
     </div>
   );
