@@ -90,8 +90,18 @@ Built:
 ## Known Issues
 - Minor: `sprint.acceptance_criteria` renders as `[object Object]` in prompts - pre-existing, not blocking
 
-## Next Steps (Phase 8)
-- [ ] Real-time updates in dashboard
-- [ ] Task detail view improvements
-- [ ] Sprint board enhancements
-- [ ] Activity feed
+## Phase 8: Dashboard Polish ✅ COMPLETE (12:34 PM)
+Sub-agent: `phase8-dashboard-polish` — completed
+
+Built:
+- [x] `ActivityFeed.tsx` - Real-time activity stream
+- [x] Real-time subscriptions (projects, tasks, activity)
+- [x] Empty states for all lists
+- [x] Removed console.log statements
+- [x] Build passes
+
+## Summary
+**Phase 7 + 8 Complete!** 🎉
+- Mission Control skill: 8 lib files (~51KB), 2 cron scripts, full CLI
+- Dashboard: Real-time updates, activity feed, polished UI
+- Total effort: ~15 min (12:20 - 12:35 PM)
