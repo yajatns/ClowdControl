@@ -281,6 +281,51 @@ export default function ProposalDetailPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {/* Project Creation Approval - Simple approve/reject for humans */}
+        {(proposal.content as any)?.type === 'project_creation' && proposal.status === 'open' && (
+          <ProjectApprovalCard 
+            proposal={proposal} 
+            onApprove={async () => {
+              // Create the project
+              const projectData = (proposal.content as any).project;
+              const { data: newProject, error } = await supabase
+                .from('projects')
+                .insert({
+                  name: projectData.name,
+                  description: projectData.description || null,
+                  status: 'active',
+                  owner_type: projectData.owner_type || 'human',
+                  owner_ids: ['yajat'],
+                  current_pm_id: projectData.pm_id || 'chhotu',
+                  tags: [],
+                  settings: projectData.settings || {
+                    require_dual_pm_consensus: false,
+                    max_debate_rounds: 3,
+                    auto_flag_instant_consensus: true,
+                  }
+                })
+                .select()
+                .single();
+              
+              if (error) {
+                alert('Failed to create project: ' + error.message);
+                return;
+              }
+              
+              // Update proposal status
+              await updateProposalStatus(proposal.id, 'approved');
+              setProposal(prev => prev ? { ...prev, status: 'approved' } : null);
+              
+              // Redirect to new project
+              router.push(`/projects/${newProject.id}`);
+            }}
+            onReject={async () => {
+              await updateProposalStatus(proposal.id, 'rejected');
+              setProposal(prev => prev ? { ...prev, status: 'rejected' } : null);
+            }}
+          />
+        )}
+
         {/* Sycophancy Warnings */}
         {sycophancyFlags.length > 0 && (
           <div className="mb-6">
@@ -292,8 +337,8 @@ export default function ProposalDetailPage() {
           </div>
         )}
 
-        {/* Reveal State */}
-        {!isRevealed && (
+        {/* Reveal State - only show for non-project-creation proposals */}
+        {(proposal.content as any)?.type !== 'project_creation' && !isRevealed && (
           <div className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-zinc-200 dark:border-zinc-800 p-8 text-center mb-6">
             <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 mx-auto mb-4 flex items-center justify-center">
               <EyeOff className="w-8 h-8 text-zinc-400 dark:text-zinc-500" />
@@ -471,6 +516,104 @@ export default function ProposalDetailPage() {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+// Simple approval card for project creation proposals
+function ProjectApprovalCard({ 
+  proposal, 
+  onApprove, 
+  onReject 
+}: { 
+  proposal: Proposal; 
+  onApprove: () => Promise<void>; 
+  onReject: () => Promise<void>;
+}) {
+  const [loading, setLoading] = useState(false);
+  const content = proposal.content as any;
+  const project = content?.project || {};
+
+  const handleApprove = async () => {
+    setLoading(true);
+    try {
+      await onApprove();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    setLoading(true);
+    try {
+      await onReject();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border-2 border-yellow-200 dark:border-yellow-800 p-6 mb-6">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/50 flex items-center justify-center shrink-0">
+          <span className="text-2xl">📁</span>
+        </div>
+        <div className="flex-1">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
+            New Project Request
+          </h2>
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
+            An agent wants to create a new project. Review and approve or reject.
+          </p>
+          
+          <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 mb-4">
+            <dl className="space-y-2 text-sm">
+              <div className="flex">
+                <dt className="w-24 text-zinc-500 dark:text-zinc-400">Name:</dt>
+                <dd className="font-medium text-zinc-900 dark:text-white">{project.name || 'Unnamed'}</dd>
+              </div>
+              {project.description && (
+                <div className="flex">
+                  <dt className="w-24 text-zinc-500 dark:text-zinc-400">Description:</dt>
+                  <dd className="text-zinc-700 dark:text-zinc-300">{project.description}</dd>
+                </div>
+              )}
+              <div className="flex">
+                <dt className="w-24 text-zinc-500 dark:text-zinc-400">PM:</dt>
+                <dd className="text-zinc-700 dark:text-zinc-300">@{project.pm_id || 'chhotu'}</dd>
+              </div>
+              <div className="flex">
+                <dt className="w-24 text-zinc-500 dark:text-zinc-400">Proposed by:</dt>
+                <dd className="text-zinc-700 dark:text-zinc-300">@{proposal.proposed_by}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleApprove}
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-500 text-white"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4" />
+              )}
+              Approve & Create Project
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleReject}
+              disabled={loading}
+              className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950"
+            >
+              <XCircle className="w-4 h-4" />
+              Reject
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
