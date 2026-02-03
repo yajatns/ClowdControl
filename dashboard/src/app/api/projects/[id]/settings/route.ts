@@ -33,17 +33,20 @@ export async function POST(
         case 'full_speed':
           discordMessage = `🔥 **Execution Mode Changed: Full Speed**
 **Project:** ${project.name}
-PM: Chain through all backlog tasks automatically. Only stop on blockers or budget limits.`;
+**Project ID:** \`${project.id}\`
+PM: Create a 5-min monitoring cron (sprint{N}-fullspeed-monitor). Chain through all backlog tasks automatically. Only stop on blockers or budget limits.`;
           break;
         case 'background':
-          discordMessage = `⏰ **Execution Mode Changed: Background**  
+          discordMessage = `⏰ **Execution Mode Changed: Background**
 **Project:** ${project.name}
-PM: Set up heartbeat cron to process tasks every 30 minutes.`;
+**Project ID:** \`${project.id}\`
+PM: Create a 30-min processing cron (sprint{N}-background-processor). Process ONE backlog task per cycle. Monitor until done, then wait for next cycle.`;
           break;
         case 'manual':
           discordMessage = `🟢 **Execution Mode Changed: Manual**
 **Project:** ${project.name}
-PM: Wait for user to click Start before processing tasks.`;
+**Project ID:** \`${project.id}\`
+PM: Disable any active processing/monitoring crons for this project. Wait for user to click Start before processing tasks.`;
           break;
       }
 

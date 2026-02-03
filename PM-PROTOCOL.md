@@ -202,15 +202,60 @@ This is non-optional. Without it, spawned agents run unsupervised.
 }
 ```
 
-### Step 8: Chain (Full Speed only)
+### Step 8: Execution Mode Behaviors
 
-When an agent completes a task in Full Speed mode:
-1. Mark the completed task as `done` (or `review` if it needs review)
-2. Pick the next highest-priority backlog task in the sprint
-3. Match it to an agent (Step 3)
-4. Write task file + spawn (Steps 4-6)
-5. Update the monitoring cron text with the new task info
-6. When no more backlog tasks → sprint is complete, disable monitoring cron
+Each mode has a specific PM behavior. These are **mandatory** — not suggestions.
+
+#### Manual Mode
+- **No cron needed.** PM waits for Start button or direct instruction.
+- When Start button is pressed → dispatch one task (Steps 1-7), monitor until done, stop.
+- Single-task monitoring cron: every 5 min, auto-disables when that task completes.
+
+#### Full Speed Mode
+- **5-min monitoring cron** that:
+  1. Checks all in-progress agents
+  2. When agent finishes → marks task done, picks next backlog task, dispatches it
+  3. Chains through ALL backlog tasks in the sprint automatically
+  4. Only stops on: blocker, budget limit, or no more backlog tasks
+  5. When sprint is complete → post summary to #disclawd-mission-control, disable cron
+
+#### Background Mode
+- **30-min task processing cron** that:
+  1. Checks active sprint for backlog tasks
+  2. Picks highest-priority backlog task
+  3. Dispatches it to the right agent (Steps 3-6)
+  4. Monitors spawned agent (sub-checks every 5 min within the 30-min window)
+  5. When agent finishes → marks task done, waits for next 30-min cycle
+  6. Processes ONE task per cycle (not chaining like Full Speed)
+  7. When sprint is complete → post summary, disable cron
+
+#### Mode Switch Behavior
+When execution mode changes:
+- **→ Manual:** Disable any active processing crons. In-progress tasks continue but no new ones are dispatched.
+- **→ Full Speed:** Create 5-min monitoring cron immediately. If backlog tasks exist, start dispatching now.
+- **→ Background:** Create 30-min processing cron. First run happens at next cycle (not immediately).
+
+#### Cron Templates
+
+**Full Speed:**
+```json
+{
+  "name": "sprint{N}-fullspeed-monitor",
+  "schedule": {"kind": "cron", "expr": "*/5 * * * *"},
+  "sessionTarget": "main", "wakeMode": "now",
+  "payload": {"kind": "systemEvent", "text": "🔥 FULL SPEED MONITOR..."}
+}
+```
+
+**Background:**
+```json
+{
+  "name": "sprint{N}-background-processor",
+  "schedule": {"kind": "cron", "expr": "*/30 * * * *"},
+  "sessionTarget": "main", "wakeMode": "now",
+  "payload": {"kind": "systemEvent", "text": "⏰ BACKGROUND PROCESSOR — Pick ONE task from Sprint {N} backlog, dispatch to best agent, monitor until done. If no backlog tasks, disable this cron."}
+}
+```
 
 ---
 
