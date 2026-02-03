@@ -160,12 +160,57 @@ VALUES ('{project_id}', 'task_assigned', 'chhotu',
   '{"task_id": "{task_id}", "agent_id": "{agent_id}", "method": "{invocation_method}"}');
 ```
 
-### Step 7: Monitor
+### Step 7: Start Monitoring Cron
 
-- Check spawned session within 10 minutes
-- If agent reports completion → move task to `review`
-- If agent is stuck/blocked → reassign or escalate
-- If agent fails 2x → PM does it directly + logs the failure
+**Every dispatch MUST start a monitoring cron if one isn't already running.**
+
+This is non-optional. Without it, spawned agents run unsupervised.
+
+#### When to create a monitor cron:
+- **Start Button pressed** → Create cron for that task
+- **Full Speed mode** → Create cron for the sprint
+- **Single task dispatch** → Create cron for that task
+- **Cron/heartbeat picks up a task** → Create cron if not already running
+
+#### Monitor cron behavior:
+- **Frequency:** Every 5 minutes
+- **Scope:** All in-progress tasks in the current sprint (or the specific task)
+- **Actions per check:**
+  1. Poll each agent's session (process poll for claude_code, sessions_list for sessions_spawn)
+  2. If agent finished → mark task done/review in Supabase, chain to next task if Full Speed
+  3. If agent failed → reassign or escalate, notify #disclawd-mission-control
+  4. If agent stuck (>15 min no progress) → check logs, intervene if needed
+- **Auto-disable:** When all monitored tasks are done (or sprint completes), disable the cron
+- **Target:** `sessionTarget: "main"` with `wakeMode: "now"` so PM acts immediately
+
+#### Cron naming convention:
+- Sprint-level: `sprint{N}-agent-monitor`
+- Single task: `task-monitor-{short-slug}`
+
+#### Template:
+```json
+{
+  "name": "sprint{N}-agent-monitor",
+  "description": "Monitor Sprint {N} agents - auto-created by PM dispatch",
+  "schedule": {"kind": "cron", "expr": "*/5 * * * *", "tz": "America/Los_Angeles"},
+  "sessionTarget": "main",
+  "wakeMode": "now",
+  "payload": {
+    "kind": "systemEvent",
+    "text": "🔄 SPRINT {N} AGENT MONITOR — Check all in-progress tasks:\n\n{list of tasks with agent, session ID, and method}\n\nFor each: poll status, update Supabase, chain next if Full Speed.\nIf all done → post summary to #disclawd-mission-control and disable this cron."
+  }
+}
+```
+
+### Step 8: Chain (Full Speed only)
+
+When an agent completes a task in Full Speed mode:
+1. Mark the completed task as `done` (or `review` if it needs review)
+2. Pick the next highest-priority backlog task in the sprint
+3. Match it to an agent (Step 3)
+4. Write task file + spawn (Steps 4-6)
+5. Update the monitoring cron text with the new task info
+6. When no more backlog tasks → sprint is complete, disable monitoring cron
 
 ---
 
@@ -178,6 +223,8 @@ VALUES ('{project_id}', 'task_assigned', 'chhotu',
 | PM checks `agents_list` (Clawdbot internal) | PM queries Supabase for Mission Control roster |
 | PM skips task file, gives instructions verbally | PM writes full task spec to `tasks/TASK-*.md` |
 | PM announces spawn without actual tool call | PM calls tool first, confirms with real session ID |
+| PM says "I'll check on them shortly" with no mechanism | PM creates a monitoring cron before confirming dispatch |
+| PM manually remembers to check agents | Monitoring cron auto-fires every 5 min until done |
 
 ---
 
