@@ -242,8 +242,15 @@ When execution mode changes:
 {
   "name": "sprint{N}-fullspeed-monitor",
   "schedule": {"kind": "cron", "expr": "*/5 * * * *"},
-  "sessionTarget": "main", "wakeMode": "now",
-  "payload": {"kind": "systemEvent", "text": "🔥 FULL SPEED MONITOR..."}
+  "sessionTarget": "isolated",
+  "wakeMode": "next-heartbeat",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "🔥 FULL SPEED MONITOR — Sprint {N}. Check all in-progress agents, update Supabase, chain next task if any finished. Post status to channel.",
+    "deliver": true,
+    "channel": "discord",
+    "to": "channel:{mission-control-channel-id}"
+  }
 }
 ```
 
@@ -252,10 +259,21 @@ When execution mode changes:
 {
   "name": "sprint{N}-background-processor",
   "schedule": {"kind": "cron", "expr": "*/30 * * * *"},
-  "sessionTarget": "main", "wakeMode": "now",
-  "payload": {"kind": "systemEvent", "text": "⏰ BACKGROUND PROCESSOR — Pick ONE task from Sprint {N} backlog, dispatch to best agent, monitor until done. If no backlog tasks, disable this cron."}
+  "sessionTarget": "isolated",
+  "wakeMode": "next-heartbeat",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "⏰ BACKGROUND PROCESSOR — Sprint {N}. Pick ONE backlog task, dispatch to best agent, monitor until done. Post status to channel. If no backlog tasks, disable this cron.",
+    "deliver": true,
+    "channel": "discord",
+    "to": "channel:{mission-control-channel-id}"
+  }
 }
 ```
+
+> ⚠️ **NEVER use `systemEvent` + `sessionTarget: main` for monitoring crons.**
+> systemEvent on main session hits the heartbeat path — if HEARTBEAT.md is empty, the cron silently does nothing.
+> Always use `agentTurn` + `sessionTarget: isolated` + `deliver: true` for monitoring crons.
 
 ---
 
