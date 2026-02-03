@@ -152,9 +152,11 @@ function ProjectPageContent() {
   };
 
   // Apply sprint filter first, then quick filters
-  const sprintFilteredTasks = activeSprintId
-    ? tasks.filter((t) => t.sprint_id === activeSprintId)
-    : tasks;
+  const sprintFilteredTasks = activeSprintId === 'unassigned'
+    ? tasks.filter((t) => !t.sprint_id)
+    : activeSprintId
+      ? tasks.filter((t) => t.sprint_id === activeSprintId)
+      : tasks;
 
   const filteredTasks = filterTasks(sprintFilteredTasks, filters);
 
@@ -262,12 +264,17 @@ function ProjectPageContent() {
                 onChange={(e) => setActiveSprintId(e.target.value || null)}
                 className="px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-md text-sm"
               >
-                <option value="">All Tasks</option>
+                <option value="">All Tasks ({tasks.length})</option>
                 {sprints.map((sprint) => (
                   <option key={sprint.id} value={sprint.id}>
-                    {sprint.name} ({sprint.status})
+                    {sprint.name} ({sprint.status}) — {tasks.filter(t => t.sprint_id === sprint.id).length} tasks
                   </option>
                 ))}
+                {tasks.filter(t => !t.sprint_id).length > 0 && (
+                  <option value="unassigned">
+                    ⚠️ Unassigned ({tasks.filter(t => !t.sprint_id).length} tasks)
+                  </option>
+                )}
               </select>
             </div>
 
