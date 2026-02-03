@@ -6,13 +6,19 @@ import path from 'path';
 const AGENTS_DIR = path.join(process.cwd(), '..', 'agents');
 
 // Map agent IDs to profile filenames
+// IDs must match Supabase agents table
 const AGENT_PROFILE_MAP: Record<string, string> = {
-  'jarvis': 'jarvis-pm.md',
+  // PMs
   'chhotu': 'jarvis-pm.md',
-  'friday': 'friday-dev.md',
+  'cheenu': 'jarvis-pm.md', // Cheenu uses same PM profile template for now
+  
+  // Specialists (IDs from Supabase)
   'friday-dev': 'friday-dev.md',
-  'ant-man': 'ant-man.md',
-  'antman': 'ant-man.md',
+  'friday': 'friday-dev.md', // alias
+  
+  'antman': 'ant-man.md', // DB uses 'antman' (no hyphen)
+  'ant-man': 'ant-man.md', // alias
+  
   'hawkeye': 'hawkeye.md',
   'shuri': 'shuri.md',
   'fury': 'fury.md',
