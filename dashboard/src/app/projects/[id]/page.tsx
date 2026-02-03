@@ -273,36 +273,16 @@ function ProjectPageContent() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Start Task Buttons - only show in manual mode */}
+              {/* Start Button - only show in manual mode */}
               {project.settings?.execution_mode === 'manual' && (
-                <>
-                  <button
-                    onClick={handleStartNextTask}
-                    disabled={startingTask}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
-                  >
-                    <Play className="w-4 h-4" />
-                    {startingTask ? 'Starting...' : 'Start Next Task'}
-                  </button>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={handleStartNextTask}
-                      disabled={startingTask}
-                      className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-l-lg font-medium transition-colors text-sm"
-                    >
-                      <SkipForward className="w-4 h-4" />
-                      Continue Sprint
-                    </button>
-                    <button
-                      onClick={handleStartNextTask}
-                      disabled={startingTask}
-                      className="flex items-center gap-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-r-lg font-medium transition-colors text-sm"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                      Next Sprint
-                    </button>
-                  </div>
-                </>
+                <button
+                  onClick={handleStartNextTask}
+                  disabled={startingTask}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors shadow-sm"
+                >
+                  <Play className="w-4 h-4" />
+                  {startingTask ? 'Starting...' : '▶ Start'}
+                </button>
               )}
               
               {/* Settings */}
