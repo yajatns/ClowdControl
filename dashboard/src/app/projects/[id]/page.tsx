@@ -28,6 +28,7 @@ import { GanttChart } from '@/components/charts/GanttChart';
 import { CriticalPath, getCriticalPathIds } from '@/components/CriticalPath';
 import { ReviewQueue } from '@/components/ReviewQueue';
 import { ProjectSettings } from '@/components/ProjectSettings';
+import { BugReportDialog } from '@/components/BugReportDialog';
 import { Rocket, LayoutGrid, List, GitBranch, BarChart3, ClipboardCheck, Play, SkipForward, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -285,6 +286,12 @@ function ProjectPageContent() {
                 </button>
               )}
               
+              {/* Bug Report */}
+              <BugReportDialog
+                projectId={projectId}
+                activeSprintId={activeSprintId}
+              />
+
               {/* Settings */}
               <ProjectSettings
                 projectId={projectId}

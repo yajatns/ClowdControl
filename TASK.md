@@ -1,98 +1,76 @@
 # Task: Add Report Bug Button — Let Humans Talk Directly to PM
 
-## Task ID
-`9038dec9-f590-4fa4-8b0b-c13f33e9adf0`
-
 ## Objective
-Add a floating "Report Bug" button in the dashboard that lets humans file bugs directly. Creates a task in Supabase and optionally notifies the PM via Discord.
+Add a "Report Bug" button to the project dashboard that lets users submit bugs directly. The bug gets created as a task in Supabase and a Discord notification is sent to the PM.
 
 ## Context
-This is the Mission Control dashboard — a Next.js app using Supabase, Tailwind, and shadcn/ui components. The project lives at `/Users/yajat/workspace/projects/mission-control/dashboard/`.
-
-Key existing files:
-- `src/lib/supabase.ts` — DB client, all types and helpers
-- `src/lib/discord-notify.ts` — Discord webhook utility (`notifyPM()`)
-- `src/app/api/tasks/route.ts` — Existing tasks API
-- `src/components/ui/` — shadcn components (dialog, button, input, etc.)
+The Mission Control dashboard at `/Users/yajat/workspace/projects/mission-control/dashboard/` is a Next.js 15 app with Tailwind CSS, using Supabase as the backend. We already have a `notifyPM()` function in `src/lib/discord-notify.ts` that sends messages to Discord.
 
 ## Requirements
 
-### 1. Floating Bug Report Button
-- 🐛 button, fixed position bottom-right corner
-- Visible on all pages (add to `layout.tsx` or a client wrapper)
-- Subtle but discoverable — small round button with tooltip
+### 1. Bug Report Dialog Component
+Create `dashboard/src/components/BugReportDialog.tsx`:
+- Modal dialog triggered by a 🐛 button in the project header area
+- Fields: Title (required), Description (textarea, required), Priority (P1/P2/P3 dropdown, default P2), Steps to Reproduce (optional textarea)
+- Submit creates a task in Supabase via API
+- Clean dark-mode UI matching existing components (zinc palette)
 
-### 2. Bug Report Modal
-When clicked, opens a dialog with:
-- **Title** (required text input)
-- **Description** (textarea, optional but encouraged)
-- **Severity** dropdown: P1 (Critical), P2 (High), P3 (Medium)
-- **Submit** button
-- **Cancel** button
+### 2. Bug Report API Endpoint
+Create `dashboard/src/app/api/projects/[id]/bugs/route.ts`:
+- `POST` endpoint that:
+  - Creates a new task in Supabase with `task_type: "bug"`, `status: "backlog"`, the active sprint ID
+  - Sends Discord notification via `notifyPM()`:
+    ```
+    🐛 **Bug Reported**
+    **Title:** {title}
+    **Priority:** P{priority}
+    **Description:** {description}
+    **Task ID:** `{task_id}`
+    
+    PM: Triage and assign to an agent.
+    ```
+  - Returns the created task
 
-Use existing shadcn `dialog` component from `src/components/ui/dialog.tsx`.
+### 3. Wire Into Project Page
+In `dashboard/src/app/projects/[id]/page.tsx`:
+- Add the BugReportDialog component near the settings/header area
+- Pass the project ID and active sprint ID
 
-### 3. Submit Flow
-On submit:
-1. POST to `/api/tasks` (or create a new `/api/bugs/route.ts`) with:
-   ```json
-   {
-     "project_id": "<current project ID from URL or context>",
-     "title": "[BUG] {user title}",
-     "description": "{user description}",
-     "task_type": "bug",
-     "priority": <severity as number>,
-     "created_by": "human",
-     "status": "backlog"
-   }
-   ```
-2. Send Discord notification via `notifyPM()`:
-   ```
-   🐛 **Bug Reported by Human**
-   **Title:** {title}
-   **Severity:** P{n}
-   **Description:** {description}
-   
-   Task created: `{task_id}`
-   ```
-3. Show confirmation toast/message with task ID
-4. Close modal
-
-### 4. API Endpoint
-Create `src/app/api/bugs/route.ts`:
-- POST handler that creates a task with `task_type: 'bug'` and `created_by: 'human'`
-- Sends Discord notification
-- Returns created task
-
-### 5. Determine Project Context
-- If user is on `/projects/[id]` page, use that project ID
-- If on homepage or elsewhere, either:
-  - Show a project selector in the modal, OR
-  - Default to the Mission Control project (`949d00d5-9072-4353-a0e9-174468978598`)
+### 4. Supabase Integration
+Use the existing `supabaseAdmin` client from `src/lib/supabase.ts` to create tasks. The tasks table schema:
+- `id` (uuid, auto)
+- `title` (text)
+- `description` (text)
+- `status` (text) — set to 'backlog'
+- `priority` (int) — 1, 2, or 3
+- `task_type` (text) — set to 'bug'
+- `sprint_id` (uuid) — the active sprint
+- `project_id` (uuid)
+- `assigned_to` (text, nullable)
+- `tags` (text[], set to ['bug', 'user-reported'])
 
 ## Files to Create
-- `src/components/BugReportButton.tsx` — Floating button + modal
-- `src/app/api/bugs/route.ts` — Bug creation API
+- `dashboard/src/components/BugReportDialog.tsx`
+- `dashboard/src/app/api/projects/[id]/bugs/route.ts`
 
 ## Files to Modify
-- `src/app/layout.tsx` — Add `<BugReportButton />` to layout
-- `src/lib/supabase.ts` — Add `createBugReport()` helper if needed
+- `dashboard/src/app/projects/[id]/page.tsx` — add BugReportDialog
 
 ## Acceptance Criteria
-- [ ] Floating 🐛 button visible on all pages
-- [ ] Clicking opens modal with title, description, severity
-- [ ] Submit creates task in Supabase with task_type='bug'
-- [ ] Discord notification sent to PM on submit
-- [ ] Confirmation shown to user
-- [ ] Modal closes after successful submit
-- [ ] Works on project pages (uses project context) and homepage
+- [ ] 🐛 button visible on project page
+- [ ] Clicking opens a modal with title, description, priority, steps to reproduce
+- [ ] Submit creates a task in Supabase with correct fields
+- [ ] Discord notification sent to PM
+- [ ] Error handling for missing fields
+- [ ] Dialog closes and shows success state after submit
+- [ ] Dark mode styling matches existing components
 
 ## Out of Scope
-- Chat-like natural language bug reporting (future enhancement)
-- Authentication (no login required for now)
-- File/screenshot attachments
+- File attachments
+- Screenshot capture
+- Assigning bugs to agents (PM does that)
 
 ## Notes
-- Keep it simple and clean — minimal UI
-- The sprint_id can be null (bugs go to backlog, PM triages later)
-- Use existing shadcn components, don't add new UI libraries
+- Use existing `Dialog` component pattern from `src/components/ui/dialog.tsx` if available
+- Follow the existing code style in the project
+- The Supabase anon key is in `.env.local`
