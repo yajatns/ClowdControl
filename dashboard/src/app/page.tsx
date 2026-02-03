@@ -7,6 +7,7 @@ import { useTheme } from '@/lib/hooks';
 import { sortAgentsBySkillLevel, getModelDisplayName } from '@/lib/agents';
 import { SkillLevelBadge } from '@/components/SkillLevelBadge';
 import { ActivityFeed } from '@/components/ActivityFeed';
+import { AgentProfileEditor } from '@/components/AgentProfileEditor';
 
 const statusColors: Record<Project['status'], string> = {
   planning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -232,7 +234,7 @@ export default function Dashboard() {
               {sortAgentsBySkillLevel(agents).map((agent) => (
                 <div
                   key={agent.id}
-                  className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4"
+                  className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 group"
                 >
                   <div className="flex items-start gap-3">
                     <div
@@ -254,6 +256,18 @@ export default function Dashboard() {
                         {getModelDisplayName(agent.model)}
                       </div>
                     </div>
+                    <button
+                      onClick={() => setEditingAgent(agent)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 
+                               rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 
+                               text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                      title="Edit agent profile"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -274,6 +288,15 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Agent Profile Editor Modal */}
+      {editingAgent && (
+        <AgentProfileEditor
+          agent={editingAgent}
+          isOpen={!!editingAgent}
+          onClose={() => setEditingAgent(null)}
+        />
+      )}
     </div>
   );
 }
