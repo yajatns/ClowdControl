@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTask, Task, updateTaskStatus } from '@/lib/supabase';
+import { createTask, Task, updateTaskStatus, getProjectSprints, supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Validate task_type
     const validTaskTypes: Task['task_type'][] = [
-      'development', 'research', 'design', 'testing', 'documentation', 'business', 'marketing', 'other'
+      'development', 'research', 'design', 'testing', 'bug', 'documentation', 'business', 'marketing', 'other'
     ];
     if (!validTaskTypes.includes(task_type)) {
       return NextResponse.json(
@@ -42,6 +42,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Auto-assign to active sprint if no sprint_id provided
+    let sprintId = body.sprint_id || null;
+    if (!sprintId) {
+      try {
+        const sprints = await getProjectSprints(project_id);
+        const activeSprint = sprints.find(s => s.status === 'active');
+        if (activeSprint) {
+          sprintId = activeSprint.id;
+        }
+      } catch {
+        // If sprint lookup fails, leave unassigned
+      }
+    }
+
     // Create the task
     const newTask = await createTask({
       project_id,
@@ -50,6 +64,7 @@ export async function POST(request: NextRequest) {
       task_type,
       priority,
       created_by,
+      sprint_id: sprintId,
     });
 
     return NextResponse.json(newTask, { status: 201 });

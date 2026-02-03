@@ -80,7 +80,7 @@ export interface Task {
   sprint_id: string | null;
   title: string;
   description: string | null;
-  task_type: 'development' | 'research' | 'design' | 'testing' | 'documentation' | 'business' | 'marketing' | 'other';
+  task_type: 'development' | 'research' | 'design' | 'testing' | 'bug' | 'documentation' | 'business' | 'marketing' | 'other';
   acceptance_criteria: string[] | null;
   status: 'backlog' | 'assigned' | 'in_progress' | 'blocked' | 'waiting_human' | 'review' | 'done' | 'cancelled';
   assigned_to: string | null;
@@ -684,6 +684,7 @@ export async function createTask(task: {
   task_type: Task['task_type'];
   priority: number;
   created_by: string;
+  sprint_id?: string | null;
   tags?: string[];
 }) {
   const { data, error } = await supabase
@@ -695,6 +696,7 @@ export async function createTask(task: {
       task_type: task.task_type,
       priority: task.priority,
       created_by: task.created_by,
+      sprint_id: task.sprint_id || null,
       status: 'backlog',
       complexity: 'medium', // default
       tokens_consumed: 0,

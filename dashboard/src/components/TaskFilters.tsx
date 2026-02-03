@@ -22,6 +22,7 @@ const statusOptions: { value: Task['status']; label: string }[] = [
   { value: 'assigned', label: 'Assigned' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'blocked', label: 'Blocked' },
+  { value: 'waiting_human', label: '🙋 Needs Human' },
   { value: 'review', label: 'Review' },
   { value: 'done', label: 'Done' },
   { value: 'cancelled', label: 'Cancelled' },
@@ -29,6 +30,7 @@ const statusOptions: { value: Task['status']; label: string }[] = [
 
 const typeOptions: { value: Task['task_type']; label: string }[] = [
   { value: 'development', label: 'Development' },
+  { value: 'bug', label: '🐛 Bug' },
   { value: 'research', label: 'Research' },
   { value: 'design', label: 'Design' },
   { value: 'testing', label: 'Testing' },
