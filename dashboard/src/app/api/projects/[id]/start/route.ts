@@ -41,7 +41,7 @@ export async function POST(
 
 PM: Please create task file and spawn the assigned agent.`;
 
-    await notifyPM(discordMessage);
+    await notifyPM(discordMessage, projectId, 'task_started');
 
     return NextResponse.json({
       message: 'Task started successfully',

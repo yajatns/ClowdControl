@@ -75,7 +75,7 @@ export async function POST(
 
 PM: Triage and assign to an agent.`;
 
-    await notifyPM(discordMessage);
+    await notifyPM(discordMessage, projectId, 'bug_reported');
 
     return NextResponse.json({ task });
   } catch (error) {

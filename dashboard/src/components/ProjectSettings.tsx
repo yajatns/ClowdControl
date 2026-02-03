@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Save, X } from 'lucide-react';
-import { ProjectSettings as ProjectSettingsType, ExecutionMode, SprintApproval } from '@/lib/supabase';
+import { Settings, Save, X, Bell, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import {
+  ProjectSettings as ProjectSettingsType,
+  ExecutionMode,
+  SprintApproval,
+  NotificationTypes,
+  DEFAULT_NOTIFICATION_TYPES,
+} from '@/lib/supabase';
 
 interface ProjectSettingsProps {
   projectId: string;
@@ -54,10 +60,24 @@ const sprintApprovalOptions: Array<{
   },
 ];
 
+const notificationTypeLabels: Record<keyof NotificationTypes, string> = {
+  task_started: 'Task started (Start button pressed)',
+  mode_changed: 'Execution mode changed',
+  bug_reported: 'Bug reported',
+  task_completed: 'Task completed',
+  sprint_completed: 'Sprint completed',
+};
+
 export function ProjectSettings({ projectId, settings, onSettingsUpdate, className }: ProjectSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [localSettings, setLocalSettings] = useState<ProjectSettingsType>(settings);
+  const [localSettings, setLocalSettings] = useState<ProjectSettingsType>({
+    ...settings,
+    notification_webhook_url: settings.notification_webhook_url ?? null,
+    notification_types: settings.notification_types ?? DEFAULT_NOTIFICATION_TYPES,
+  });
   const [saving, setSaving] = useState(false);
+  const [testingWebhook, setTestingWebhook] = useState(false);
+  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
 
   const handleSave = async () => {
     setSaving(true);
@@ -78,16 +98,52 @@ export function ProjectSettings({ projectId, settings, onSettingsUpdate, classNa
       setIsOpen(false);
     } catch (error) {
       console.error('Failed to update settings:', error);
-      // Could add toast notification here
     } finally {
       setSaving(false);
     }
   };
 
+  const handleTestWebhook = async () => {
+    if (!localSettings.notification_webhook_url) return;
+    setTestingWebhook(true);
+    setTestResult(null);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/test-webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhook_url: localSettings.notification_webhook_url }),
+      });
+
+      const data = await response.json();
+      setTestResult(data.success ? 'success' : 'error');
+    } catch {
+      setTestResult('error');
+    } finally {
+      setTestingWebhook(false);
+    }
+  };
+
   const handleCancel = () => {
-    setLocalSettings(settings);
+    setLocalSettings({
+      ...settings,
+      notification_webhook_url: settings.notification_webhook_url ?? null,
+      notification_types: settings.notification_types ?? DEFAULT_NOTIFICATION_TYPES,
+    });
+    setTestResult(null);
     setIsOpen(false);
   };
+
+  const toggleNotificationType = (type: keyof NotificationTypes) => {
+    setLocalSettings({
+      ...localSettings,
+      notification_types: {
+        ...(localSettings.notification_types ?? DEFAULT_NOTIFICATION_TYPES),
+        [type]: !(localSettings.notification_types ?? DEFAULT_NOTIFICATION_TYPES)[type],
+      },
+    });
+  };
+
+  const webhookConfigured = !!localSettings.notification_webhook_url;
 
   if (!isOpen) {
     return (
@@ -119,7 +175,7 @@ export function ProjectSettings({ projectId, settings, onSettingsUpdate, classNa
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Execution Mode */}
           <div className="space-y-3">
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -218,6 +274,119 @@ export function ProjectSettings({ projectId, settings, onSettingsUpdate, classNa
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Maximum tokens the PM can consume per sprint. Leave empty for no limit.
               </p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-zinc-200 dark:border-zinc-700" />
+
+          {/* Notifications Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Notifications
+              </label>
+              {/* Status indicator */}
+              <span
+                className={`ml-auto inline-flex items-center gap-1.5 text-xs font-medium ${
+                  webhookConfigured
+                    ? testResult === 'success'
+                      ? 'text-green-600 dark:text-green-400'
+                      : testResult === 'error'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-green-600 dark:text-green-400'
+                    : 'text-zinc-400 dark:text-zinc-500'
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    webhookConfigured
+                      ? testResult === 'error'
+                        ? 'bg-red-500'
+                        : 'bg-green-500'
+                      : 'bg-zinc-400 dark:bg-zinc-600'
+                  }`}
+                />
+                {webhookConfigured
+                  ? testResult === 'error'
+                    ? 'Error'
+                    : 'Configured'
+                  : 'Not configured'}
+              </span>
+            </div>
+
+            {/* Discord Webhook URL */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Discord Webhook URL
+              </label>
+              <input
+                type="url"
+                placeholder="https://discord.com/api/webhooks/..."
+                value={localSettings.notification_webhook_url || ''}
+                onChange={(e) => {
+                  setLocalSettings({
+                    ...localSettings,
+                    notification_webhook_url: e.target.value || null,
+                  });
+                  setTestResult(null);
+                }}
+                className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+
+              {/* Test Connection Button */}
+              <button
+                onClick={handleTestWebhook}
+                disabled={!localSettings.notification_webhook_url || testingWebhook}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors border border-zinc-200 dark:border-zinc-700"
+              >
+                {testingWebhook ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : testResult === 'success' ? (
+                  <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                ) : testResult === 'error' ? (
+                  <XCircle className="w-3.5 h-3.5 text-red-600" />
+                ) : (
+                  <Bell className="w-3.5 h-3.5" />
+                )}
+                {testingWebhook
+                  ? 'Testing...'
+                  : testResult === 'success'
+                  ? 'Test Passed'
+                  : testResult === 'error'
+                  ? 'Test Failed — Check URL'
+                  : 'Test Connection'}
+              </button>
+            </div>
+
+            {/* Notification Types */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Notify on these events
+              </label>
+              <div className="space-y-1">
+                {(Object.keys(notificationTypeLabels) as Array<keyof NotificationTypes>).map(
+                  (type) => (
+                    <label
+                      key={type}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={
+                          (localSettings.notification_types ?? DEFAULT_NOTIFICATION_TYPES)[type]
+                        }
+                        onChange={() => toggleNotificationType(type)}
+                        className="rounded border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                        {notificationTypeLabels[type]}
+                      </span>
+                    </label>
+                  )
+                )}
+              </div>
             </div>
           </div>
         </div>

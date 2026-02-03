@@ -29,6 +29,7 @@ import { CriticalPath, getCriticalPathIds } from '@/components/CriticalPath';
 import { ReviewQueue } from '@/components/ReviewQueue';
 import { ProjectSettings } from '@/components/ProjectSettings';
 import { BugReportDialog } from '@/components/BugReportDialog';
+import { NotificationSetupBanner } from '@/components/NotificationSetupBanner';
 import { Rocket, LayoutGrid, List, GitBranch, BarChart3, ClipboardCheck, Play, SkipForward, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -311,6 +312,11 @@ function ProjectPageContent() {
           </div>
         </div>
       </header>
+
+      {/* Notification Setup Banner */}
+      {!project.settings?.notification_webhook_url && (
+        <NotificationSetupBanner projectId={projectId} />
+      )}
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Project Progress & Budget */}

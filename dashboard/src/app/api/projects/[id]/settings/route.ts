@@ -51,7 +51,7 @@ PM: Disable any active processing/monitoring crons for this project. Wait for us
       }
 
       if (discordMessage) {
-        await notifyPM(discordMessage);
+        await notifyPM(discordMessage, projectId, 'mode_changed');
       }
     }
 

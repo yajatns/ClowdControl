@@ -10,6 +10,22 @@ export type TaskComplexity = 'simple' | 'medium' | 'complex' | 'critical';
 export type ExecutionMode = 'manual' | 'full_speed' | 'background';
 export type SprintApproval = 'required' | 'auto';
 
+export interface NotificationTypes {
+  task_started: boolean;
+  mode_changed: boolean;
+  bug_reported: boolean;
+  task_completed: boolean;
+  sprint_completed: boolean;
+}
+
+export const DEFAULT_NOTIFICATION_TYPES: NotificationTypes = {
+  task_started: true,
+  mode_changed: true,
+  bug_reported: true,
+  task_completed: true,
+  sprint_completed: true,
+};
+
 export interface ProjectSettings {
   require_dual_pm_consensus: boolean;
   max_debate_rounds: number;
@@ -18,6 +34,8 @@ export interface ProjectSettings {
   execution_mode: ExecutionMode;
   sprint_approval: SprintApproval;
   budget_limit_per_sprint: number | null;
+  notification_webhook_url: string | null;
+  notification_types: NotificationTypes;
 }
 
 // Phase 5: Shadowing modes
