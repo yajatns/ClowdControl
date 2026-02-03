@@ -82,7 +82,7 @@ export interface Task {
   description: string | null;
   task_type: 'development' | 'research' | 'design' | 'testing' | 'documentation' | 'business' | 'marketing' | 'other';
   acceptance_criteria: string[] | null;
-  status: 'backlog' | 'assigned' | 'in_progress' | 'blocked' | 'review' | 'done' | 'cancelled';
+  status: 'backlog' | 'assigned' | 'in_progress' | 'blocked' | 'waiting_human' | 'review' | 'done' | 'cancelled';
   assigned_to: string | null;
   assigned_by: string | null;
   assigned_at: string | null;
@@ -707,4 +707,23 @@ export async function createTask(task: {
 
   if (error) throw error;
   return data as Task;
+}
+
+// ============================================
+// Human Attention Queue
+// ============================================
+
+export async function getHumanAttentionTasks() {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(`
+      *,
+      project:projects(name, id)
+    `)
+    .in('status', ['waiting_human', 'blocked'])
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data as (Task & { project: { name: string; id: string } })[];
 }

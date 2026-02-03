@@ -1,58 +1,156 @@
-# TASK: Mission Control - Build Dashboard (Continued)
+# Task: Human Escalation Feature + Clean Data
 
-## Status
-- ✅ Task 1: Review Complete (schema is solid, minor fixes noted)
-- 🔄 Task 2-5: In Progress
+## Objective
+1. Add human escalation workflow for blocked tasks
+2. Clean up test data and set up real projects
 
-## Review Notes (from Task 1)
-1. Add constraint to critiques table: `ALTER TABLE critiques ADD CONSTRAINT critiques_min_concerns CHECK (array_length(concerns, 1) >= 2);`
-2. Enable real-time in Supabase dashboard for: tasks, activity_log, proposals, sycophancy_flags
-3. RLS policies can be added post-MVP
+---
 
-## Your Tasks (Continue from Task 2)
+## Feature 1: Human Escalation
 
-### Task 2: Create Supabase Client Library
-Create `lib/supabase.ts`:
-```typescript
-- Initialize Supabase client with env vars
-- Export typed client
-- Add helper functions for CRUD operations
+### Database Changes
+Add new task status value:
+
+```sql
+-- Update tasks status check constraint
+ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_status_check;
+ALTER TABLE tasks ADD CONSTRAINT tasks_status_check 
+  CHECK (status IN ('backlog', 'assigned', 'in_progress', 'blocked', 'waiting_human', 'review', 'done', 'cancelled'));
 ```
 
-### Task 3: Scaffold Next.js Dashboard
-```bash
-npx create-next-app@latest dashboard --typescript --tailwind --eslint --app --src-dir
+### API Changes
+Update `POST /api/tasks` to accept `waiting_human` status.
+
+### Dashboard Changes
+
+**File:** `dashboard/src/app/page.tsx`
+
+Add a "Needs Your Attention" section at the TOP of the dashboard that shows:
+- Tasks with status `waiting_human`
+- Tasks with status `blocked` 
+- Should be visually prominent (yellow/orange background, icon)
+- Each card shows: title, what's needed, urgency, created time
+
+**Component:** Create `dashboard/src/components/HumanAttentionQueue.tsx`
+
+```tsx
+// Shows tasks that need human input
+// Fetches tasks where status = 'waiting_human' OR status = 'blocked'
+// Displays prominently with action buttons
 ```
 
-Then:
-- Install shadcn/ui
-- Set up Supabase client
-- Create basic layout
+### Migration File
+Create `supabase/migrations/004_waiting_human_status.sql`
 
-### Task 4: Build MVP Pages
-Priority:
-1. `/` - Project list (cards showing name, status, PM, task counts)
-2. `/projects/[id]` - Project detail with sprint info
-3. `/projects/[id]/tasks` - Kanban board
+---
 
-### Task 5: Real-time Activity Feed
-- Subscribe to activity_log table
-- Show live updates on project pages
+## Feature 2: Clean Data & Real Projects
 
-## Environment
-Credentials are in `.env` - use them via process.env
+### Delete Test Data
+Create a script or SQL to clean test projects:
 
-## Technical Stack
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- @supabase/supabase-js v2
-- React Query (optional)
+```sql
+-- Delete test tasks first (foreign key)
+DELETE FROM tasks WHERE project_id IN (
+  SELECT id FROM projects WHERE name ILIKE '%test%'
+);
 
-## Deliverables
-- Working dashboard with at least project list + detail pages
-- README with setup instructions
-- Commit your progress frequently
+-- Delete test projects
+DELETE FROM projects WHERE name ILIKE '%test%';
+```
 
-Start with Task 2 - create the Supabase client library!
+### Create Real Projects
+
+**Project 1: Mission Control**
+```json
+{
+  "name": "Mission Control",
+  "description": "Multi-agent project coordination system with anti-groupthink mechanisms",
+  "status": "active",
+  "owner_type": "human",
+  "owner_ids": ["yajat"],
+  "current_pm_id": "chhotu",
+  "tags": ["infrastructure", "ai", "meta"]
+}
+```
+
+**Project 2: DpuDebugAgent** (if desired)
+```json
+{
+  "name": "DpuDebugAgent", 
+  "description": "AI-powered DPU regression analysis and live debugging system",
+  "status": "active",
+  "owner_type": "human",
+  "owner_ids": ["yajat"],
+  "current_pm_id": "chhotu",
+  "tags": ["microsoft", "ai", "debugging"]
+}
+```
+
+**Project 3: FPL Analytics** (if desired)
+```json
+{
+  "name": "FPL Analytics",
+  "description": "Fantasy Premier League data analysis and optimization tools",
+  "status": "planning",
+  "owner_type": "human", 
+  "owner_ids": ["yajat"],
+  "current_pm_id": "chhotu",
+  "tags": ["fpl", "analytics", "sports"]
+}
+```
+
+### API Endpoint for Seeding
+Create `POST /api/admin/seed` that:
+1. Cleans test data
+2. Creates real projects
+3. Returns summary of changes
+
+---
+
+## Files to Create/Modify
+
+### Create:
+- `dashboard/src/components/HumanAttentionQueue.tsx`
+- `dashboard/src/app/api/admin/seed/route.ts`
+- `dashboard/supabase/migrations/004_waiting_human_status.sql`
+
+### Modify:
+- `dashboard/src/app/page.tsx` — Add HumanAttentionQueue at top
+- `dashboard/src/app/api/tasks/route.ts` — Accept waiting_human status
+- `dashboard/src/lib/supabase.ts` — Add helper for human attention tasks
+
+---
+
+## Feature 3: Fix Task Detail Panel Layout
+
+The task detail slide-out panel on the right has layout issues:
+- Content is pushed too far right with lots of empty space on left
+- Text alignment is off
+- Metadata grid (ASSIGNEE, CREATED BY, etc.) looks cramped
+
+**Find the component** that renders the task detail panel (likely in `src/components/` - could be TaskDetail, TaskPanel, TaskDrawer, or similar).
+
+**Fix:**
+- Left-align content properly with consistent padding
+- Fix the metadata grid to have proper spacing
+- Make description text wrap nicely with good margins
+- "Edit Task" button should be positioned better (maybe top-right or bottom)
+
+Look at the existing component and improve the layout/spacing.
+
+---
+
+## Acceptance Criteria
+- [ ] Tasks can have status `waiting_human`
+- [ ] Dashboard shows "Needs Your Attention" section at top
+- [ ] Blocked and waiting_human tasks appear in attention queue
+- [ ] Test projects are removed
+- [ ] Real projects (Mission Control at minimum) exist
+- [ ] Migration file created for status update
+- [ ] Task detail panel has proper left-aligned layout with good spacing
+
+## Notes
+- Keep existing projects that aren't test data (Soccer Stats Tracker, FPL Analytics if real)
+- The attention queue should auto-refresh or use real-time subscription
+- Make the attention section collapsible when empty

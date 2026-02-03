@@ -29,6 +29,7 @@ const statusIcons: Record<Task['status'], React.ReactNode> = {
   assigned: <Clock className="size-3 text-blue-500" />,
   in_progress: <Clock className="size-3 text-yellow-500" />,
   blocked: <AlertCircle className="size-3 text-red-500" />,
+  waiting_human: <AlertCircle className="size-3 text-orange-500" />,
   review: <Clock className="size-3 text-purple-500" />,
   done: <CheckCircle2 className="size-3 text-green-500" />,
   cancelled: <Circle className="size-3 text-zinc-300" />,

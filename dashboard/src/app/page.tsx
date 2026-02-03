@@ -8,6 +8,7 @@ import { sortAgentsBySkillLevel, getModelDisplayName } from '@/lib/agents';
 import { SkillLevelBadge } from '@/components/SkillLevelBadge';
 import { ActivityFeed } from '@/components/ActivityFeed';
 import { AgentProfileEditor } from '@/components/AgentProfileEditor';
+import { HumanAttentionQueue } from '@/components/HumanAttentionQueue';
 
 const statusColors: Record<Project['status'], string> = {
   planning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
@@ -135,6 +136,11 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Human Attention Queue */}
+        <div className="mb-8">
+          <HumanAttentionQueue />
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">

@@ -34,6 +34,7 @@ const statusConfig: Record<Task['status'], { label: string; className: string }>
   assigned: { label: 'Assigned', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
   in_progress: { label: 'In Progress', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' },
   blocked: { label: 'Blocked', className: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' },
+  waiting_human: { label: 'Needs Human', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300' },
   review: { label: 'Review', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300' },
   done: { label: 'Done', className: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' },
   cancelled: { label: 'Cancelled', className: 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400' },
