@@ -19,6 +19,30 @@ Use this template when creating new agent profiles.
 - {capability 2}
 - ...
 
+## Skills
+Clawdbot skills this agent uses:
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| {skill-name} | {what it does} | {trigger condition} |
+
+## Tool Rules
+Constraints and preferences for tool usage:
+
+- **{tool}**: {rule or preference}
+- **{tool}**: {rule or preference}
+
+## Workflows
+Predefined sequences for common tasks:
+
+### {workflow-name}
+**Trigger:** {when to use this workflow}
+**Steps:**
+1. {action 1}
+2. {action 2}
+3. {action 3}
+**Outputs:** {what gets produced}
+
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
 

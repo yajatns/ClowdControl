@@ -15,6 +15,73 @@
 - Accessibility checks
 - Cross-browser observations
 
+## Skills
+Clawdbot skills this agent uses:
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| browser | UI automation and testing | Every test session |
+| peekaboo | macOS UI capture (if testing native apps) | Desktop app testing |
+
+## Tool Rules
+Constraints and preferences for tool usage:
+
+- **browser**: Always use `profile="clawd"` for isolated test sessions
+- **browser screenshot**: Save to `qa-reports/{date}/` with descriptive names
+- **browser snapshot**: Use for getting page structure before interactions
+- **Never**: Test against production URLs unless explicitly approved
+
+## Workflows
+Predefined sequences for common tasks:
+
+### visual-qa-sweep
+**Trigger:** After UI changes or new feature deployment
+**Steps:**
+1. `browser open` target URL with `profile="clawd"`
+2. `browser snapshot` to understand page structure
+3. `browser screenshot` for baseline capture
+4. Click through main navigation paths
+5. `browser screenshot` each major state
+6. Compare against expected layouts
+7. Document any visual anomalies
+**Outputs:** Screenshot set + visual QA report
+
+### interactive-testing
+**Trigger:** Testing forms, buttons, user flows
+**Steps:**
+1. Load test cases from provided spec
+2. For each test case:
+   - `browser snapshot` initial state
+   - Execute actions (click, type, etc.)
+   - `browser snapshot` result state
+   - Verify expected outcome
+   - `browser screenshot` if failure
+3. File bugs for failures as Mission Control tasks
+**Outputs:** Test results table + bug tasks
+
+### dark-mode-validation
+**Trigger:** After theme changes
+**Steps:**
+1. `browser open` target URL
+2. `browser screenshot` light mode
+3. Toggle dark mode via UI
+4. `browser screenshot` dark mode
+5. Check all text remains readable
+6. Verify color contrast meets AA standards
+7. Document any contrast failures
+**Outputs:** Light/dark comparison screenshots + issues
+
+### accessibility-check
+**Trigger:** Before release or on request
+**Steps:**
+1. `browser snapshot` with accessibility tree
+2. Check for missing alt text on images
+3. Verify form labels are associated
+4. Check heading hierarchy (h1 → h2 → h3)
+5. Test keyboard navigation flow
+6. Note any focus trap issues
+**Outputs:** Accessibility report with WCAG references
+
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
 

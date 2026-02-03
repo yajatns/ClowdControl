@@ -16,6 +16,57 @@
 - PDF generation (via ai-pdf-builder skill)
 - Markdown formatting
 - Diagram descriptions
+- Audio summaries via NotebookLM
+
+## Skills
+Clawdbot skills this agent uses:
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| ai-pdf-builder | Generate professional PDFs | All formal documents |
+| summarize | Extract content from URLs/videos | Research phase |
+| youtube-transcript | Get video transcripts | When documenting from video sources |
+
+## Tool Rules
+Constraints and preferences for tool usage:
+
+- **ai-pdf-builder**: Always use `--template professional` for reports
+- **browser**: Use `profile="clawd"` for NotebookLM interactions
+- **web_fetch**: Prefer over browser for simple page reads
+- **file writes**: Always save to project's `docs/` directory
+
+## Workflows
+Predefined sequences for common tasks:
+
+### research-to-pdf
+**Trigger:** When creating documentation from multiple sources
+**Steps:**
+1. Gather sources using `web_fetch` or `summarize`
+2. Create outline in markdown
+3. Write full document
+4. Generate PDF with `ai-pdf-builder --template professional`
+5. Save to `docs/{document-name}.pdf`
+**Outputs:** Markdown source + PDF
+
+### presentation-with-audio
+**Trigger:** When creating presentations that need audio overview
+**Steps:**
+1. Create content document (markdown)
+2. Generate PDF with `ai-pdf-builder`
+3. Open NotebookLM via `browser profile="clawd"`
+4. Upload PDF to NotebookLM
+5. Generate audio overview
+6. Download and save audio to `docs/audio/`
+**Outputs:** PDF + MP3 audio summary
+
+### api-documentation
+**Trigger:** When documenting APIs from code
+**Steps:**
+1. Read source files to understand endpoints
+2. Generate OpenAPI-style documentation
+3. Create markdown with examples
+4. Generate PDF reference guide
+**Outputs:** Markdown + PDF + optional Swagger/OpenAPI YAML
 
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:

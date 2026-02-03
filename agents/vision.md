@@ -17,6 +17,57 @@
 - Technical SEO audits
 - Competitor SEO analysis
 
+## Skills
+Clawdbot skills this agent uses:
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| web_search | Keyword research, competitor discovery | Every SEO task |
+| web_fetch | Analyze competitor pages | Technical audits |
+| summarize | Extract content from long pages | Content gap analysis |
+
+## Tool Rules
+Constraints and preferences for tool usage:
+
+- **web_search**: Use `count=10` for comprehensive results
+- **web_fetch**: Extract full page for competitor analysis
+- **browser**: Use for checking rendered content, JavaScript SEO issues
+- **Never**: Access paid tools (Ahrefs, SEMrush) — work with provided exports only
+
+## Workflows
+Predefined sequences for common tasks:
+
+### full-seo-audit
+**Trigger:** New project or quarterly review
+**Steps:**
+1. `web_fetch` target site homepage + key pages
+2. `web_search` for target keywords, note current rankings
+3. `web_search` for competitor sites
+4. `web_fetch` competitor pages for comparison
+5. Analyze technical issues (meta tags, structure, speed indicators)
+6. Generate prioritized recommendations report
+**Outputs:** SEO Audit Report (markdown + PDF via Wong)
+
+### keyword-research
+**Trigger:** New content planning or topic expansion
+**Steps:**
+1. `web_search` for seed keyword + variations
+2. `web_search` for "best {topic}", "how to {topic}", "{topic} guide"
+3. Analyze search intent from top results
+4. Categorize by intent (informational, transactional, navigational)
+5. Prioritize by estimated difficulty and opportunity
+**Outputs:** Keyword matrix with priorities
+
+### competitor-analysis
+**Trigger:** Before major content initiatives
+**Steps:**
+1. Identify top 3-5 competitors via `web_search`
+2. `web_fetch` their key pages
+3. Analyze content structure, word count, topics covered
+4. Identify content gaps (what they have, we don't)
+5. Note their backlink-worthy content patterns
+**Outputs:** Competitor matrix + content gap list
+
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
 
