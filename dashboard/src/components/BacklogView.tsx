@@ -55,6 +55,11 @@ const taskTypeConfig: Record<Task['task_type'], { label: string; color: string; 
     color: 'text-emerald-700 dark:text-emerald-400',
     bg: 'bg-emerald-100 dark:bg-emerald-950',
   },
+  bug: {
+    label: 'Bug',
+    color: 'text-red-700 dark:text-red-400',
+    bg: 'bg-red-100 dark:bg-red-950',
+  },
   documentation: {
     label: 'Docs',
     color: 'text-amber-700 dark:text-amber-400',

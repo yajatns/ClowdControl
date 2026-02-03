@@ -6,6 +6,20 @@ import { createClient } from '@supabase/supabase-js';
 export type SkillLevel = 'junior' | 'mid' | 'senior' | 'lead';
 export type TaskComplexity = 'simple' | 'medium' | 'complex' | 'critical';
 
+// Execution mode settings
+export type ExecutionMode = 'manual' | 'full_speed' | 'background';
+export type SprintApproval = 'required' | 'auto';
+
+export interface ProjectSettings {
+  require_dual_pm_consensus: boolean;
+  max_debate_rounds: number;
+  auto_flag_instant_consensus: boolean;
+  notify_channel: string | null;
+  execution_mode: ExecutionMode;
+  sprint_approval: SprintApproval;
+  budget_limit_per_sprint: number | null;
+}
+
 // Phase 5: Shadowing modes
 export type ShadowingMode = 'none' | 'recommended' | 'required';
 
@@ -45,12 +59,7 @@ export interface Project {
   updated_at: string;
   deadline: string | null;
   tags: string[];
-  settings: {
-    require_dual_pm_consensus: boolean;
-    max_debate_rounds: number;
-    auto_flag_instant_consensus: boolean;
-    notify_channel: string | null;
-  };
+  settings: ProjectSettings;
   token_budget: number;
   tokens_used: number;
 }
@@ -728,4 +737,107 @@ export async function getHumanAttentionTasks() {
 
   if (error) throw error;
   return data as (Task & { project: { name: string; id: string } })[];
+}
+
+// ============================================
+// Project Settings & Execution Mode
+// ============================================
+
+export async function getProjectSettings(projectId: string): Promise<ProjectSettings> {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('settings')
+    .eq('id', projectId)
+    .single();
+
+  if (error) throw error;
+  return data.settings as ProjectSettings;
+}
+
+export async function updateProjectSettings(
+  projectId: string,
+  settings: Partial<ProjectSettings>
+): Promise<void> {
+  // First get current settings
+  const currentProject = await getProject(projectId);
+  
+  // Merge with new settings
+  const updatedSettings = {
+    ...currentProject.settings,
+    ...settings,
+  };
+
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      settings: updatedSettings,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', projectId);
+
+  if (error) throw error;
+}
+
+export async function startNextTask(projectId: string): Promise<Task | null> {
+  // Find the highest priority backlog task in the active sprint
+  const { data: sprints } = await supabase
+    .from('sprints')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('status', 'active')
+    .order('number', { ascending: false })
+    .limit(1);
+
+  const activeSprint = sprints?.[0];
+  if (!activeSprint) {
+    throw new Error('No active sprint found');
+  }
+
+  // Get highest priority backlog task in active sprint
+  const { data: task, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('project_id', projectId)
+    .eq('sprint_id', activeSprint.id)
+    .eq('status', 'backlog')
+    .order('priority', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // No tasks found
+      return null;
+    }
+    throw error;
+  }
+
+  // Update task status to assigned
+  const { data: updatedTask, error: updateError } = await supabase
+    .from('tasks')
+    .update({
+      status: 'assigned',
+      assigned_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', task.id)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+
+  // Log the activity
+  await supabase
+    .from('activity_log')
+    .insert({
+      action: 'start_task_requested',
+      entity_type: 'task',
+      entity_id: task.id,
+      details: {
+        project_id: projectId,
+        task_title: task.title,
+      },
+    });
+
+  return updatedTask as Task;
 }

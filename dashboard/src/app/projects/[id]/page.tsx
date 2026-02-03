@@ -27,7 +27,8 @@ import { DependencyGraph } from '@/components/DependencyGraph';
 import { GanttChart } from '@/components/charts/GanttChart';
 import { CriticalPath, getCriticalPathIds } from '@/components/CriticalPath';
 import { ReviewQueue } from '@/components/ReviewQueue';
-import { Rocket, LayoutGrid, List, GitBranch, BarChart3, ClipboardCheck } from 'lucide-react';
+import { ProjectSettings } from '@/components/ProjectSettings';
+import { Rocket, LayoutGrid, List, GitBranch, BarChart3, ClipboardCheck, Play, SkipForward, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ViewMode = 'kanban' | 'list';
@@ -69,6 +70,7 @@ function ProjectPageContent() {
   const [tabMode, setTabMode] = useState<TabMode>('tasks');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [startingTask, setStartingTask] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const filters = useTaskFilters();
 
@@ -127,6 +129,42 @@ function ProjectPageContent() {
       prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
     );
     setSelectedTask(updatedTask);
+  };
+
+  const handleStartNextTask = async () => {
+    setStartingTask(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/start`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to start task');
+      }
+      
+      const result = await response.json();
+      
+      if (result.task) {
+        // Update the task in our local state
+        setTasks((prev) =>
+          prev.map((t) => (t.id === result.task.id ? result.task : t))
+        );
+        // Show success notification or highlight the task
+        console.log('Started task:', result.task.title);
+      } else {
+        console.log('No tasks available to start');
+        // Could show a toast or notification here
+      }
+    } catch (error) {
+      console.error('Error starting task:', error);
+      // Could show error notification here
+    } finally {
+      setStartingTask(false);
+    }
+  };
+
+  const handleSettingsUpdate = (newSettings: Project['settings']) => {
+    setProject((prev) => prev ? { ...prev, settings: newSettings } : null);
   };
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
@@ -227,15 +265,62 @@ function ProjectPageContent() {
               </h1>
               <p className="text-zinc-600 dark:text-zinc-400 mt-1">
                 PM: {getAgentName(project.current_pm_id)} • Status: {project.status}
+                {project.settings?.execution_mode && (
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded">
+                    {project.settings.execution_mode}
+                  </span>
+                )}
               </p>
             </div>
-            <Link
-              href={`/projects/${projectId}/sprints`}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              <Rocket className="w-4 h-4" />
-              Sprint Planning
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* Start Task Buttons - only show in manual mode */}
+              {project.settings?.execution_mode === 'manual' && (
+                <>
+                  <button
+                    onClick={handleStartNextTask}
+                    disabled={startingTask}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
+                  >
+                    <Play className="w-4 h-4" />
+                    {startingTask ? 'Starting...' : 'Start Next Task'}
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleStartNextTask}
+                      disabled={startingTask}
+                      className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-l-lg font-medium transition-colors text-sm"
+                    >
+                      <SkipForward className="w-4 h-4" />
+                      Continue Sprint
+                    </button>
+                    <button
+                      onClick={handleStartNextTask}
+                      disabled={startingTask}
+                      className="flex items-center gap-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-r-lg font-medium transition-colors text-sm"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                      Next Sprint
+                    </button>
+                  </div>
+                </>
+              )}
+              
+              {/* Settings */}
+              <ProjectSettings
+                projectId={projectId}
+                settings={project.settings}
+                onSettingsUpdate={handleSettingsUpdate}
+              />
+              
+              {/* Sprint Planning */}
+              <Link
+                href={`/projects/${projectId}/sprints`}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                <Rocket className="w-4 h-4" />
+                Sprint Planning
+              </Link>
+            </div>
           </div>
         </div>
       </header>

@@ -1,0 +1,49 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { startNextTask } from '@/lib/supabase';
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: projectId } = await params;
+
+    if (!projectId) {
+      return NextResponse.json(
+        { error: 'Project ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const task = await startNextTask(projectId);
+
+    if (!task) {
+      return NextResponse.json(
+        { 
+          message: 'No backlog tasks available in active sprint',
+          task: null 
+        },
+        { status: 200 }
+      );
+    }
+
+    return NextResponse.json({
+      message: 'Task started successfully',
+      task,
+    });
+  } catch (error) {
+    console.error('Error starting next task:', error);
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
