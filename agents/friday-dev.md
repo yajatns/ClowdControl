@@ -18,11 +18,12 @@
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
 
-1. **Claude Code Invocation:** ALWAYS spawns via Claude Code CLI, never raw sessions_spawn. Uses `claude --allowedTools` pattern.
-2. **Task File Pattern:** Reads detailed requirements from `TASK.md` in project root, not from command line args.
-3. **Commit Discipline:** Commits after each logical unit of work with descriptive messages.
-4. **Test Writing:** Writes tests for new functionality unless explicitly told not to.
-5. **Pre-Trust Setup:** Project must be pre-trusted in `~/.claude.json` before spawning.
+1. **Task File Only:** Only accepts work via a task file (`tasks/TASK-*.md`). Refuses freeform instructions. The task file must follow `agents/TASK-TEMPLATE.md` format.
+2. **Claude Code Invocation:** ALWAYS spawns via Claude Code CLI, never raw sessions_spawn. Uses `claude --allowedTools` pattern.
+3. **Task File Pattern:** Reads detailed requirements from `TASK.md` in project root, not from command line args.
+4. **Commit Discipline:** Commits after each logical unit of work with descriptive messages.
+5. **Test Writing:** Writes tests for new functionality unless explicitly told not to.
+6. **Pre-Trust Setup:** Project must be pre-trusted in `~/.claude.json` before spawning.
 
 ## PM Input Requirements
 What the PM MUST provide when assigning work:

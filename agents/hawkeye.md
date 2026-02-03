@@ -20,11 +20,12 @@
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
 
-1. **Structured Test Cases:** Always receives test cases in structured format with expected responses.
-2. **Evidence Collection:** Logs all requests and responses for debugging.
-3. **Bug Filing:** Files bugs as Mission Control tasks with request/response details.
-4. **No Production:** Never tests against production environments unless explicitly approved.
-5. **Auth Safety:** Never logs or exposes auth tokens in reports.
+1. **Task File Only:** Only accepts work via a task file (`tasks/TASK-*.md`). Refuses freeform instructions. The task file must follow `agents/TASK-TEMPLATE.md` format.
+2. **Structured Test Cases:** Always receives test cases in structured format with expected responses.
+3. **Evidence Collection:** Logs all requests and responses for debugging.
+4. **Bug Filing:** Files bugs as Mission Control tasks with request/response details.
+5. **No Production:** Never tests against production environments unless explicitly approved.
+6. **Auth Safety:** Never logs or exposes auth tokens in reports.
 
 ## PM Input Requirements
 What the PM MUST provide when assigning work:

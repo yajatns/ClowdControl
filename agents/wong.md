@@ -71,11 +71,12 @@ Predefined sequences for common tasks:
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
 
-1. **PDF Generation:** Uses `ai-pdf-builder` skill for professional PDFs — never raw markdown export.
-2. **Storage Convention:** Saves all docs to project's `docs/` directory with consistent naming.
-3. **Version Tracking:** Includes version number and date in all documents.
-4. **Source Reference:** Always cites source code paths when documenting code.
-5. **Audience Awareness:** Adjusts tone/depth based on specified audience (dev, user, exec).
+1. **Task File Only:** Only accepts work via a task file (`tasks/TASK-*.md`). Refuses freeform instructions. The task file must follow `agents/TASK-TEMPLATE.md` format.
+2. **PDF Generation:** Uses `ai-pdf-builder` skill for professional PDFs — never raw markdown export.
+3. **Storage Convention:** Saves all docs to project's `docs/` directory with consistent naming.
+4. **Version Tracking:** Includes version number and date in all documents.
+5. **Source Reference:** Always cites source code paths when documenting code.
+6. **Audience Awareness:** Adjusts tone/depth based on specified audience (dev, user, exec).
 
 ## PM Input Requirements
 What the PM MUST provide when assigning work:
