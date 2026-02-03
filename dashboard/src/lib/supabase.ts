@@ -34,6 +34,16 @@ export interface TaskDependency {
   created_at: string;
 }
 
+export type InvocationMethod = 'sessions_spawn' | 'claude_code' | 'custom';
+
+export interface InvocationConfig {
+  model?: string;
+  thinking?: string;
+  allowedTools?: string[];
+  tools?: string[];
+  [key: string]: unknown;
+}
+
 export interface Agent {
   id: string;
   display_name: string;
@@ -45,6 +55,8 @@ export interface Agent {
   last_seen: string | null;
   skill_level: SkillLevel;
   model: string;
+  invocation_method: InvocationMethod | null;
+  invocation_config: InvocationConfig | null;
 }
 
 export interface Project {
@@ -268,6 +280,29 @@ export async function getAgents() {
   
   if (error) throw error;
   return data as Agent[];
+}
+
+export async function getSpecialistAgents() {
+  const { data, error } = await supabase
+    .from('agents')
+    .select('*')
+    .eq('agent_type', 'specialist')
+    .eq('is_active', true)
+    .order('display_name', { ascending: true });
+
+  if (error) throw error;
+  return data as Agent[];
+}
+
+export async function getAgentById(agentId: string) {
+  const { data, error } = await supabase
+    .from('agents')
+    .select('*')
+    .eq('id', agentId)
+    .single();
+
+  if (error) throw error;
+  return data as Agent;
 }
 
 export async function getRecentActivity(limit = 20) {
