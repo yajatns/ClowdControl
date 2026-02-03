@@ -1,10 +1,11 @@
 'use client';
 
-import { Task } from '@/lib/supabase';
+import { Task, Sprint } from '@/lib/supabase';
 import { useMemo } from 'react';
 
 interface ProjectProgressProps {
   tasks: Task[];
+  sprints?: Sprint[];
   className?: string;
   showDetails?: boolean;
 }
@@ -15,18 +16,60 @@ interface TaskCounts {
   inProgress: number;
   blocked: number;
   percentage: number;
+  sprintInfo?: string;
 }
 
-export function ProjectProgress({ tasks, className = '', showDetails = true }: ProjectProgressProps) {
+export function ProjectProgress({ tasks, sprints, className = '', showDetails = true }: ProjectProgressProps) {
   const counts: TaskCounts = useMemo(() => {
     const total = tasks.length;
     const done = tasks.filter(t => t.status === 'done').length;
     const inProgress = tasks.filter(t => t.status === 'in_progress').length;
     const blocked = tasks.filter(t => t.status === 'blocked').length;
-    const percentage = total > 0 ? Math.round((done / total) * 100) : 0;
 
-    return { total, done, inProgress, blocked, percentage };
-  }, [tasks]);
+    let percentage: number;
+    let sprintInfo: string | undefined;
+
+    if (sprints && sprints.length > 0) {
+      // Sprint-aware progress: weight each sprint equally
+      const completedSprints = sprints.filter(s => s.status === 'completed').length;
+      const totalSprints = sprints.length;
+
+      // Calculate per-sprint progress
+      let totalWeight = 0;
+      let weightedProgress = 0;
+
+      for (const sprint of sprints) {
+        const sprintTasks = tasks.filter(t => t.sprint_id === sprint.id);
+        totalWeight += 1;
+
+        if (sprint.status === 'completed') {
+          // Completed sprint = 100% regardless of task states
+          weightedProgress += 1;
+        } else if (sprintTasks.length > 0) {
+          // Active/planned/review sprint with tasks: use task completion ratio
+          const sprintDone = sprintTasks.filter(t => t.status === 'done').length;
+          weightedProgress += sprintDone / sprintTasks.length;
+        }
+        // Planned sprint with no tasks = 0% contribution (weightedProgress += 0)
+      }
+
+      // Include unassigned tasks (not in any sprint) as their own "bucket"
+      const unassignedTasks = tasks.filter(t => !t.sprint_id);
+      if (unassignedTasks.length > 0) {
+        totalWeight += 1;
+        const unassignedDone = unassignedTasks.filter(t => t.status === 'done').length;
+        weightedProgress += unassignedDone / unassignedTasks.length;
+      }
+
+      percentage = totalWeight > 0 ? Math.round((weightedProgress / totalWeight) * 100) : 0;
+      sprintInfo = `${completedSprints}/${totalSprints} sprints completed`;
+    } else {
+      // No sprints — fall back to simple task-based progress
+      percentage = total > 0 ? Math.round((done / total) * 100) : 0;
+    }
+
+    return { total, done, inProgress, blocked, percentage, sprintInfo };
+  }, [tasks, sprints]);
 
   if (counts.total === 0) {
     return (
@@ -56,6 +99,13 @@ export function ProjectProgress({ tasks, className = '', showDetails = true }: P
           <span className="text-sm text-zinc-500 dark:text-zinc-400">complete</span>
         </div>
       </div>
+
+      {/* Sprint context */}
+      {counts.sprintInfo && (
+        <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 text-right">
+          {counts.sprintInfo}
+        </div>
+      )}
 
       {/* Progress bar with multiple segments */}
       <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden flex">
@@ -118,13 +168,38 @@ export function ProjectProgress({ tasks, className = '', showDetails = true }: P
 }
 
 // Compact version for use in headers or smaller spaces
-export function ProjectProgressCompact({ tasks, className = '' }: { tasks: Task[]; className?: string }) {
+export function ProjectProgressCompact({ tasks, sprints, className = '' }: { tasks: Task[]; sprints?: Sprint[]; className?: string }) {
   const counts = useMemo(() => {
     const total = tasks.length;
     const done = tasks.filter(t => t.status === 'done').length;
-    const percentage = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    let percentage: number;
+    if (sprints && sprints.length > 0) {
+      let totalWeight = 0;
+      let weightedProgress = 0;
+      for (const sprint of sprints) {
+        const sprintTasks = tasks.filter(t => t.sprint_id === sprint.id);
+        totalWeight += 1;
+        if (sprint.status === 'completed') {
+          weightedProgress += 1;
+        } else if (sprintTasks.length > 0) {
+          const sprintDone = sprintTasks.filter(t => t.status === 'done').length;
+          weightedProgress += sprintDone / sprintTasks.length;
+        }
+      }
+      const unassignedTasks = tasks.filter(t => !t.sprint_id);
+      if (unassignedTasks.length > 0) {
+        totalWeight += 1;
+        const unassignedDone = unassignedTasks.filter(t => t.status === 'done').length;
+        weightedProgress += unassignedDone / unassignedTasks.length;
+      }
+      percentage = totalWeight > 0 ? Math.round((weightedProgress / totalWeight) * 100) : 0;
+    } else {
+      percentage = total > 0 ? Math.round((done / total) * 100) : 0;
+    }
+
     return { total, done, percentage };
-  }, [tasks]);
+  }, [tasks, sprints]);
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>

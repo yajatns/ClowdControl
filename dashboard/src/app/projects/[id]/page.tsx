@@ -308,7 +308,7 @@ function ProjectPageContent() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Project Progress & Budget */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <ProjectProgress tasks={tasks} />
+          <ProjectProgress tasks={tasks} sprints={sprints} />
           <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
             <BudgetProgressBar
               used={project.tokens_used ?? 0}
