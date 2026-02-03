@@ -92,8 +92,8 @@ export function AgentProfileEditor({ agent, isOpen, onClose }: AgentProfileEdito
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
           <div>
@@ -144,7 +144,7 @@ export function AgentProfileEditor({ agent, isOpen, onClose }: AgentProfileEdito
               <textarea
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
-                className="flex-1 w-full p-4 font-mono text-sm border rounded-lg 
+                className="flex-1 w-full p-6 font-mono text-base leading-relaxed border rounded-lg 
                          dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent
                          resize-none"

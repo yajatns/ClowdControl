@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Mission Control Documentation</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Mission Control Documentation</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#mission-control-multi-agent-project-management-system"
+id="toc-mission-control-multi-agent-project-management-system">Mission
+Control: Multi-Agent Project Management System</a>
+<ul>
+<li><a href="#table-of-contents" id="toc-table-of-contents">Table of
+Contents</a></li>
+<li><a href="#what-is-mission-control"
+id="toc-what-is-mission-control">What is Mission Control?</a></li>
+<li><a href="#the-problem-it-solves" id="toc-the-problem-it-solves">The
+Problem It Solves</a>
+<ul>
+<li><a href="#single-agent-limitations"
+id="toc-single-agent-limitations">1. <strong>Single-Agent
+Limitations</strong></a></li>
+<li><a href="#coordination-overhead" id="toc-coordination-overhead">2.
+<strong>Coordination Overhead</strong></a></li>
+<li><a href="#ai-sycophancy-groupthink"
+id="toc-ai-sycophancy-groupthink">3. <strong>AI Sycophancy &amp;
+Groupthink</strong></a></li>
+<li><a href="#cost-inefficiency" id="toc-cost-inefficiency">4.
+<strong>Cost Inefficiency</strong></a></li>
+</ul></li>
+<li><a href="#key-advantages" id="toc-key-advantages">Key Advantages</a>
+<ul>
+<li><a href="#specialized-agents" id="toc-specialized-agents">✅
+<strong>Specialized Agents</strong></a></li>
+<li><a href="#parallel-execution" id="toc-parallel-execution">✅
+<strong>Parallel Execution</strong></a></li>
+<li><a href="#anti-groupthink-by-design"
+id="toc-anti-groupthink-by-design">✅ <strong>Anti-Groupthink by
+Design</strong></a></li>
+<li><a href="#persistent-context" id="toc-persistent-context">✅
+<strong>Persistent Context</strong></a></li>
+<li><a href="#human-in-the-loop" id="toc-human-in-the-loop">✅
+<strong>Human-in-the-Loop</strong></a></li>
+<li><a href="#cost-optimized" id="toc-cost-optimized">✅
+<strong>Cost-Optimized</strong></a></li>
+</ul></li>
+<li><a href="#system-architecture" id="toc-system-architecture">System
+Architecture</a></li>
+<li><a href="#agent-registry" id="toc-agent-registry">Agent Registry</a>
+<ul>
+<li><a href="#pm-agents-opus-4.5" id="toc-pm-agents-opus-4.5">PM Agents
+(Opus 4.5)</a></li>
+<li><a href="#specialist-agents" id="toc-specialist-agents">Specialist
+Agents</a></li>
+</ul></li>
+<li><a href="#setup-guide" id="toc-setup-guide">Setup Guide</a>
+<ul>
+<li><a href="#prerequisites"
+id="toc-prerequisites">Prerequisites</a></li>
+<li><a href="#step-1-clone-install" id="toc-step-1-clone-install">Step
+1: Clone &amp; Install</a></li>
+<li><a href="#step-2-supabase-setup" id="toc-step-2-supabase-setup">Step
+2: Supabase Setup</a></li>
+<li><a href="#step-3-clawdbot-configuration"
+id="toc-step-3-clawdbot-configuration">Step 3: Clawdbot
+Configuration</a></li>
+<li><a href="#step-4-start-dashboard"
+id="toc-step-4-start-dashboard">Step 4: Start Dashboard</a></li>
+<li><a href="#step-5-discord-integration-optional"
+id="toc-step-5-discord-integration-optional">Step 5: Discord Integration
+(Optional)</a></li>
+</ul></li>
+<li><a href="#project-lifecycle" id="toc-project-lifecycle">Project
+Lifecycle</a>
+<ul>
+<li><a href="#phase-1-project-creation"
+id="toc-phase-1-project-creation">Phase 1: Project Creation</a></li>
+<li><a href="#phase-2-anti-groupthink-review"
+id="toc-phase-2-anti-groupthink-review">Phase 2: Anti-Groupthink
+Review</a></li>
+<li><a href="#phase-3-task-execution"
+id="toc-phase-3-task-execution">Phase 3: Task Execution</a></li>
+<li><a href="#phase-4-review-completion"
+id="toc-phase-4-review-completion">Phase 4: Review &amp;
+Completion</a></li>
+</ul></li>
+<li><a href="#user-experience-walkthrough"
+id="toc-user-experience-walkthrough">User Experience Walkthrough</a>
+<ul>
+<li><a href="#dashboard-views" id="toc-dashboard-views">Dashboard
+Views</a></li>
+</ul></li>
+<li><a href="#anti-groupthink-system"
+id="toc-anti-groupthink-system">Anti-Groupthink System</a>
+<ul>
+<li><a href="#the-problem-with-ai-consensus"
+id="toc-the-problem-with-ai-consensus">The Problem with AI
+Consensus</a></li>
+<li><a href="#our-solution-structured-independence"
+id="toc-our-solution-structured-independence">Our Solution: Structured
+Independence</a></li>
+</ul></li>
+<li><a href="#cost-optimization" id="toc-cost-optimization">Cost
+Optimization</a>
+<ul>
+<li><a href="#model-tier-strategy" id="toc-model-tier-strategy">Model
+Tier Strategy</a></li>
+<li><a href="#estimated-savings" id="toc-estimated-savings">Estimated
+Savings</a></li>
+<li><a href="#how-it-works" id="toc-how-it-works">How It Works</a></li>
+</ul></li>
+<li><a href="#quick-reference" id="toc-quick-reference">Quick
+Reference</a>
+<ul>
+<li><a href="#chat-commands-discord" id="toc-chat-commands-discord">Chat
+Commands (Discord)</a></li>
+<li><a href="#cli-commands" id="toc-cli-commands">CLI Commands</a></li>
+<li><a href="#api-endpoints-dashboard"
+id="toc-api-endpoints-dashboard">API Endpoints (Dashboard)</a></li>
+</ul></li>
+<li><a href="#roadmap" id="toc-roadmap">Roadmap</a>
+<ul>
+<li><a href="#phase-1-foundation-current"
+id="toc-phase-1-foundation-current">✅ Phase 1: Foundation
+(Current)</a></li>
+<li><a href="#phase-2-orchestration-next"
+id="toc-phase-2-orchestration-next">🔄 Phase 2: Orchestration
+(Next)</a></li>
+<li><a href="#phase-3-anti-groupthink"
+id="toc-phase-3-anti-groupthink">📋 Phase 3: Anti-Groupthink</a></li>
+<li><a href="#phase-4-advanced" id="toc-phase-4-advanced">🚀 Phase 4:
+Advanced</a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="mission-control-multi-agent-project-management-system">Mission
+Control: Multi-Agent Project Management System</h1>
+<blockquote>
+<p><em>“Like having a team of AI specialists coordinated by AI project
+managers—with built-in safeguards against groupthink.”</em></p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#what-is-mission-control">What is Mission Control?</a></li>
+<li><a href="#the-problem-it-solves">The Problem It Solves</a></li>
+<li><a href="#key-advantages">Key Advantages</a></li>
+<li><a href="#system-architecture">System Architecture</a></li>
+<li><a href="#agent-registry">Agent Registry</a></li>
+<li><a href="#setup-guide">Setup Guide</a></li>
+<li><a href="#project-lifecycle">Project Lifecycle</a></li>
+<li><a href="#user-experience-walkthrough">User Experience
+Walkthrough</a></li>
+<li><a href="#anti-groupthink-system">Anti-Groupthink System</a></li>
+<li><a href="#cost-optimization">Cost Optimization</a></li>
+</ol>
+<hr />
+<h2 id="what-is-mission-control">What is Mission Control?</h2>
+<p>Mission Control is a <strong>multi-agent coordination system</strong>
+that manages AI-powered project execution. It combines:</p>
+<ul>
+<li><strong>AI Project Managers</strong> (Chhotu &amp; Cheenu) running
+on Opus 4.5</li>
+<li><strong>Specialist AI Agents</strong> for specific tasks
+(development, design, writing, research)</li>
+<li><strong>Anti-Groupthink Protocols</strong> to ensure diverse,
+quality decisions</li>
+<li><strong>Real-time Dashboard</strong> for human oversight and
+intervention</li>
+<li><strong>Supabase Backend</strong> for persistent state and real-time
+updates</li>
+</ul>
+<p>Think of it as a virtual software company where AI agents handle the
+work, AI PMs coordinate, and you maintain strategic oversight.</p>
+<hr />
+<h2 id="the-problem-it-solves">The Problem It Solves</h2>
+<h3 id="single-agent-limitations">1. <strong>Single-Agent
+Limitations</strong></h3>
+<p>Traditional AI assistants are generalists. They can do many things,
+but: - Context gets polluted across different task types - No
+specialization means mediocre results in complex domains - Single point
+of failure—one confused agent derails everything</p>
+<h3 id="coordination-overhead">2. <strong>Coordination
+Overhead</strong></h3>
+<p>Managing multiple AI tools manually is exhausting: - Copy-pasting
+between Claude, ChatGPT, Cursor, etc. - Losing context between sessions
+- No unified view of project progress - You become the bottleneck</p>
+<h3 id="ai-sycophancy-groupthink">3. <strong>AI Sycophancy &amp;
+Groupthink</strong></h3>
+<p>AI models tend to agree with each other (and you) too readily: -
+First opinion anchors all subsequent opinions - No genuine debate or
+critique - Important concerns get buried - Decisions lack rigor</p>
+<h3 id="cost-inefficiency">4. <strong>Cost Inefficiency</strong></h3>
+<p>Using Opus for everything is expensive: - Simple tasks don’t need
+frontier models - No intelligent routing based on task complexity -
+Token waste on boilerplate operations</p>
+<hr />
+<h2 id="key-advantages">Key Advantages</h2>
+<h3 id="specialized-agents">✅ <strong>Specialized Agents</strong></h3>
+<p>Each agent is optimized for their domain: - <strong>Friday</strong>
+(Developer): Sonnet 4.5 + Claude Code tools - <strong>Wanda</strong>
+(Designer): Haiku 3.5 for UI work - <strong>Loki</strong> (Writer):
+Sonnet 3.5 for content - <strong>Wong</strong> (Docs): Haiku 3.5 for
+documentation</p>
+<h3 id="parallel-execution">✅ <strong>Parallel Execution</strong></h3>
+<p>Multiple agents work simultaneously: - Research and development can
+happen in parallel - PM agents coordinate without blocking - 8
+concurrent sub-agents supported</p>
+<h3 id="anti-groupthink-by-design">✅ <strong>Anti-Groupthink by
+Design</strong></h3>
+<p>Built-in protocols prevent AI echo chambers: - Independent opinion
+generation (no peeking) - Structured critique phases - Sycophancy
+detection flags - Escalation to human when consensus is suspicious</p>
+<h3 id="persistent-context">✅ <strong>Persistent Context</strong></h3>
+<p>Everything is stored in Supabase: - Project state survives session
+resets - Activity logs for full audit trail - Real-time sync across all
+interfaces</p>
+<h3 id="human-in-the-loop">✅ <strong>Human-in-the-Loop</strong></h3>
+<p>You maintain strategic control: - Dashboard for oversight - Approval
+workflows for critical decisions - Escalation when agents disagree -
+Manual intervention always possible</p>
+<h3 id="cost-optimized">✅ <strong>Cost-Optimized</strong></h3>
+<p>Intelligent model selection: - Opus for PMs (complex reasoning) -
+Sonnet 4.5 for developers - Sonnet 3.5 for general specialists - Haiku
+3.5 for simple tasks</p>
+<hr />
+<h2 id="system-architecture">System Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        MISSION CONTROL                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐ │
+│  │   Discord   │    │  Dashboard  │    │   Clawdbot CLI      │ │
+│  │  Interface  │    │  (Next.js)  │    │   (Direct Access)   │ │
+│  └──────┬──────┘    └──────┬──────┘    └──────────┬──────────┘ │
+│         │                  │                      │             │
+│         └──────────────────┼──────────────────────┘             │
+│                            │                                    │
+│                            ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    ORCHESTRATOR                              ││
+│  │  • Task routing &amp; assignment                                 ││
+│  │  • Agent spawning (sessions_spawn)                          ││
+│  │  • Progress monitoring                                       ││
+│  │  • Anti-groupthink enforcement                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                            │                                    │
+│         ┌──────────────────┼──────────────────┐                 │
+│         ▼                  ▼                  ▼                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
+│  │   CHHOTU    │    │   CHEENU    │    │ SPECIALISTS │         │
+│  │  (PM Agent) │    │  (PM Agent) │    │             │         │
+│  │  Opus 4.5   │    │  Opus 4.5   │    │ Friday      │         │
+│  │             │    │             │    │ Wanda       │         │
+│  │  Jarvis     │    │  Friday     │    │ Loki        │         │
+│  └─────────────┘    └─────────────┘    │ Wong...     │         │
+│                                        └─────────────┘         │
+│                            │                                    │
+│                            ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    SUPABASE                                  ││
+│  │  • Projects, Sprints, Tasks                                 ││
+│  │  • Agent Registry                                            ││
+│  │  • Proposals &amp; Debates                                       ││
+│  │  • Activity Logs                                             ││
+│  │  • Real-time subscriptions                                   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="agent-registry">Agent Registry</h2>
+<h3 id="pm-agents-opus-4.5">PM Agents (Opus 4.5)</h3>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 20%" />
+<col style="width: 46%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>MCU Codename</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chhotu</code></td>
+<td>Chhotu</td>
+<td>Jarvis</td>
+<td>Primary PM, orchestrates projects</td>
+</tr>
+<tr>
+<td><code>cheenu</code></td>
+<td>Cheenu</td>
+<td>Friday</td>
+<td>Secondary PM, provides independent opinions</td>
+</tr>
+</tbody>
+</table>
+<h3 id="specialist-agents">Specialist Agents</h3>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 21%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Role</th>
+<th>Model</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>friday-dev</code></td>
+<td>Friday</td>
+<td>Developer</td>
+<td>Sonnet 4.5</td>
+<td>Coding, debugging, architecture</td>
+</tr>
+<tr>
+<td><code>shuri</code></td>
+<td>Shuri</td>
+<td>Product Analyst</td>
+<td>Sonnet 4</td>
+<td>Analysis, testing, user research</td>
+</tr>
+<tr>
+<td><code>fury</code></td>
+<td>Fury</td>
+<td>Customer Researcher</td>
+<td>Sonnet 4</td>
+<td>Interviews, competitive analysis</td>
+</tr>
+<tr>
+<td><code>vision</code></td>
+<td>Vision</td>
+<td>SEO Analyst</td>
+<td>Sonnet 3.5</td>
+<td>SEO, analytics, content strategy</td>
+</tr>
+<tr>
+<td><code>loki</code></td>
+<td>Loki</td>
+<td>Content Writer</td>
+<td>Sonnet 3.5</td>
+<td>Copywriting, storytelling</td>
+</tr>
+<tr>
+<td><code>quill</code></td>
+<td>Quill</td>
+<td>Social Media</td>
+<td>Sonnet 3.5</td>
+<td>Community, engagement</td>
+</tr>
+<tr>
+<td><code>wanda</code></td>
+<td>Wanda</td>
+<td>UI/UX Designer</td>
+<td>Haiku 3.5</td>
+<td>Visual design, prototypes</td>
+</tr>
+<tr>
+<td><code>pepper</code></td>
+<td>Pepper</td>
+<td>Email Marketing</td>
+<td>Sonnet 3.5</td>
+<td>Email campaigns, automation</td>
+</tr>
+<tr>
+<td><code>wong</code></td>
+<td>Wong</td>
+<td>Documentation</td>
+<td>Haiku 3.5</td>
+<td>Technical writing, docs</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="setup-guide">Setup Guide</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Node.js 20+</li>
+<li>Clawdbot installed and configured</li>
+<li>Supabase account (free tier works)</li>
+<li>Discord server (optional, for chat interface)</li>
+</ul>
+<h3 id="step-1-clone-install">Step 1: Clone &amp; Install</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/workspace/projects/mission-control</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span></code></pre></div>
+<h3 id="step-2-supabase-setup">Step 2: Supabase Setup</h3>
+<ol type="1">
+<li><p>Create a new Supabase project</p></li>
+<li><p>Run the schema in SQL Editor:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> supabase/schema.sql <span class="kw">|</span> <span class="ex">pbcopy</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Paste in Supabase SQL Editor → Run</span></span></code></pre></div></li>
+<li><p>Copy credentials to <code>.env</code>:</p>
+<pre class="env"><code>SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key</code></pre></li>
+</ol>
+<h3 id="step-3-clawdbot-configuration">Step 3: Clawdbot
+Configuration</h3>
+<p>Ensure models are in the allowlist:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clawdbot</span> models list</span></code></pre></div>
+<p>Required models: - <code>anthropic/claude-opus-4-5</code> (opus) -
+<code>anthropic/claude-sonnet-4-5-20250514</code> (sonnet45) -
+<code>anthropic/claude-sonnet-4-20250514</code> (sonnet4) -
+<code>anthropic/claude-3-5-sonnet-latest</code> (sonnet35) -
+<code>anthropic/claude-haiku-3-5-latest</code> (haiku35)</p>
+<h3 id="step-4-start-dashboard">Step 4: Start Dashboard</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> dashboard</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run dev</span></code></pre></div>
+<p>Open: http://localhost:3000</p>
+<h3 id="step-5-discord-integration-optional">Step 5: Discord Integration
+(Optional)</h3>
+<p>The <code>#disclawd-mission-control</code> channel is pre-configured.
+Chhotu monitors this channel and can: - Create projects via chat -
+Assign tasks - Report progress - Handle escalations</p>
+<hr />
+<h2 id="project-lifecycle">Project Lifecycle</h2>
+<h3 id="phase-1-project-creation">Phase 1: Project Creation</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ USER ACTION                                                     │
+│ &quot;Create a new project for building a landing page for XYZ&quot;      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ PM AGENT (Chhotu)                                               │
+│ • Creates project in Supabase                                   │
+│ • Generates initial sprint plan                                 │
+│ • Identifies required specialists                               │
+│ • Creates proposal for team review                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ DATABASE STATE                                                  │
+│ projects: { id: &quot;...&quot;, name: &quot;XYZ Landing Page&quot;, status: &quot;planning&quot; }
+│ sprints: [{ number: 1, acceptance_criteria: [...] }]            │
+│ proposals: [{ type: &quot;sprint_plan&quot;, status: &quot;open&quot; }]            │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>User Sees (Dashboard):</strong> - New project card appears -
+Sprint plan with acceptance criteria - Proposal awaiting review</p>
+<h3 id="phase-2-anti-groupthink-review">Phase 2: Anti-Groupthink
+Review</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ INDEPENDENT OPINION PHASE                                       │
+│                                                                 │
+│ PM 1 (Chhotu): Reviews sprint plan                              │
+│ PM 2 (Cheenu): Reviews sprint plan INDEPENDENTLY                │
+│                                                                 │
+│ Neither sees the other&#39;s opinion yet                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ CRITIQUE PHASE                                                  │
+│                                                                 │
+│ Opinions revealed. Each PM critiques the other:                 │
+│ • &quot;Sprint 1 scope is too ambitious&quot;                             │
+│ • &quot;Missing acceptance criteria for mobile&quot;                      │
+│ • &quot;Dependency on design not accounted for&quot;                      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ CONSENSUS OR ESCALATE                                           │
+│                                                                 │
+│ If agree → Proceed                                              │
+│ If disagree → Debate rounds (max 3)                             │
+│ If still disagree → Escalate to human                           │
+│ If suspicious consensus → Flag for review                       │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>User Sees (Dashboard):</strong> - Proposal card shows both
+opinions - Critique summary - Consensus status or escalation alert -
+Sycophancy flags if detected</p>
+<h3 id="phase-3-task-execution">Phase 3: Task Execution</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ SPRINT ACTIVE                                                   │
+│                                                                 │
+│ Tasks assigned to specialists:                                  │
+│ • Design mockups → Wanda (Haiku 3.5)                           │
+│ • Write copy → Loki (Sonnet 3.5)                               │
+│ • Build frontend → Friday (Sonnet 4.5)                         │
+│ • SEO optimization → Vision (Sonnet 3.5)                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ ORCHESTRATOR                                                    │
+│                                                                 │
+│ sessions_spawn(agent: &quot;friday-dev&quot;, task: &quot;Build hero section&quot;) │
+│ sessions_spawn(agent: &quot;wanda&quot;, task: &quot;Design hero mockup&quot;)      │
+│                                                                 │
+│ Parallel execution with progress tracking                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ ACTIVITY LOG                                                    │
+│                                                                 │
+│ 17:30 - friday-dev started &quot;Build hero section&quot;                 │
+│ 17:31 - wanda completed &quot;Design hero mockup&quot;                    │
+│ 17:35 - friday-dev submitted PR for review                      │
+│ 17:36 - shuri assigned to review PR                             │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>User Sees (Dashboard):</strong> - Task board with status
+columns (Backlog → In Progress → Review → Done) - Real-time updates as
+agents work - Activity feed showing all actions - Agent avatars on
+assigned tasks</p>
+<h3 id="phase-4-review-completion">Phase 4: Review &amp; Completion</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ SPRINT REVIEW                                                   │
+│                                                                 │
+│ PM verifies acceptance criteria:                                │
+│ ✅ Hero section responsive on mobile                            │
+│ ✅ Copy matches brand guidelines                                │
+│ ✅ Page loads under 2 seconds                                   │
+│ ⚠️  CTA button color needs adjustment                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ SPRINT COMPLETION                                               │
+│                                                                 │
+│ Sprint 1: COMPLETED                                             │
+│ • 8 tasks done                                                  │
+│ • 1 task carried to Sprint 2                                    │
+│ • 0 escalations                                                 │
+│ • 2 sycophancy flags reviewed (false positives)                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>User Sees (Dashboard):</strong> - Sprint completion summary -
+Metrics and stats - Next sprint auto-planned - Retrospective notes</p>
+<hr />
+<h2 id="user-experience-walkthrough">User Experience Walkthrough</h2>
+<h3 id="dashboard-views">Dashboard Views</h3>
+<h4 id="projects-overview">1. <strong>Projects Overview</strong></h4>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ 🎯 MISSION CONTROL                                    [+ New]   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │ XYZ Landing     │  │ Mobile App      │  │ API Refactor    │ │
+│  │ Page            │  │ v2.0            │  │                 │ │
+│  │                 │  │                 │  │                 │ │
+│  │ Sprint 2/4      │  │ Sprint 1/3      │  │ Sprint 3/3      │ │
+│  │ ████████░░ 80%  │  │ ██░░░░░░░░ 20%  │  │ ██████████ 100% │ │
+│  │                 │  │                 │  │                 │ │
+│  │ 🟢 Active       │  │ 🟡 Planning     │  │ ✅ Completed    │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<h4 id="project-detail">2. <strong>Project Detail</strong></h4>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ XYZ Landing Page                                    [⚙️] [📊]   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Sprint 2: Core Features                    Due: Feb 15        │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  BACKLOG        IN PROGRESS      REVIEW          DONE          │
+│  ─────────      ───────────      ──────          ────          │
+│  ┌─────────┐    ┌─────────┐      ┌─────────┐    ┌─────────┐   │
+│  │ Contact │    │ Pricing │      │ Hero    │    │ Nav     │   │
+│  │ Form    │    │ Table   │      │ Section │    │ Menu    │   │
+│  │         │    │         │      │         │    │         │   │
+│  │ 🧑‍💻 ---  │    │ 🧑‍💻 Friday│      │ 👁️ Shuri│    │ ✅ Done │   │
+│  └─────────┘    └─────────┘      └─────────┘    └─────────┘   │
+│  ┌─────────┐    ┌─────────┐                     ┌─────────┐   │
+│  │ Footer  │    │ Copy    │                     │ Logo    │   │
+│  │         │    │ Writing │                     │ Design  │   │
+│  │ 🎨 Wanda│    │ ✍️ Loki │                     │ ✅ Done │   │
+│  └─────────┘    └─────────┘                     └─────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<h4 id="proposal-review">3. <strong>Proposal Review</strong></h4>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ 🗳️ PROPOSAL: Sprint 3 Planning                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Status: DEBATING (Round 2/3)                                   │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ CHHOTU&#39;s Position                              Confidence: 4││
+│  │ ─────────────────                                           ││
+│  │ &quot;Sprint 3 should focus on performance optimization.         ││
+│  │  We have technical debt from Sprint 2 that will slow        ││
+│  │  future development if not addressed now.&quot;                  ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ CHEENU&#39;s Position                              Confidence: 3││
+│  │ ─────────────────                                           ││
+│  │ &quot;Sprint 3 should prioritize the checkout flow.              ││
+│  │  Revenue features should come before optimization.          ││
+│  │  Technical debt can wait until Sprint 4.&quot;                   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+│  ⚠️ SYCOPHANCY FLAG: None detected                              │
+│                                                                 │
+│  [Approve Chhotu] [Approve Cheenu] [Request More Debate] [Decide]│
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<h4 id="activity-feed">4. <strong>Activity Feed</strong></h4>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ 📋 ACTIVITY                                         [Filter ▼]  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  17:45  🟢  friday-dev completed &quot;Build pricing table&quot;          │
+│  17:42  💬  shuri commented on Hero Section PR                  │
+│  17:38  🚀  sprint 2 started                                    │
+│  17:35  ✅  chhotu approved sprint 2 plan                       │
+│  17:30  🗳️  cheenu submitted independent opinion                │
+│  17:28  🗳️  chhotu submitted independent opinion                │
+│  17:25  📝  Proposal created: Sprint 2 Planning                 │
+│  17:20  🎯  Project &quot;XYZ Landing Page&quot; created                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="anti-groupthink-system">Anti-Groupthink System</h2>
+<h3 id="the-problem-with-ai-consensus">The Problem with AI
+Consensus</h3>
+<p>When multiple AI agents review the same proposal: 1.
+<strong>Anchoring</strong>: First opinion influences all others 2.
+<strong>Sycophancy</strong>: Models agree to be helpful, not accurate 3.
+<strong>Echo Chamber</strong>: Similar training data = similar biases 4.
+<strong>Shallow Critique</strong>: Surface-level agreement without
+rigor</p>
+<h3 id="our-solution-structured-independence">Our Solution: Structured
+Independence</h3>
+<h4 id="phase-1-blind-opinion-generation">Phase 1: Blind Opinion
+Generation</h4>
+<pre><code>Each PM generates their opinion WITHOUT seeing others.
+Stored in: independent_opinions table
+Includes: opinion JSON, confidence score (1-5), timestamp</code></pre>
+<h4 id="phase-2-reveal-critique">Phase 2: Reveal &amp; Critique</h4>
+<pre><code>Opinions revealed simultaneously.
+Each PM must:
+- Identify specific concerns with the other&#39;s position
+- Provide concrete suggestions
+- Declare if they still agree after considering concerns</code></pre>
+<h4 id="phase-3-structured-debate">Phase 3: Structured Debate</h4>
+<pre><code>If disagreement persists:
+- Up to 3 debate rounds
+- Each round requires new reasoning (no repeating)
+- Confidence scores tracked
+- Position changes logged with justification</code></pre>
+<h4 id="phase-4-sycophancy-detection">Phase 4: Sycophancy Detection</h4>
+<pre><code>Automatic flags for:
+- instant_high_consensus: Agreement in &lt; 30 seconds
+- echo_language: Copying phrases from other opinions
+- flip_without_reasoning: Changing position without explanation
+- no_substantive_concerns: Empty or vague critiques
+- copied_conclusion: Identical recommendations</code></pre>
+<h4 id="phase-5-escalation">Phase 5: Escalation</h4>
+<pre><code>If max debate rounds reached without consensus:
+- Human notified via Discord/Dashboard
+- Both positions summarized
+- Human makes final decision
+- Decision logged for learning</code></pre>
+<hr />
+<h2 id="cost-optimization">Cost Optimization</h2>
+<h3 id="model-tier-strategy">Model Tier Strategy</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 25%" />
+<col style="width: 21%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Model</th>
+<th>Cost</th>
+<th>Use For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontier</strong></td>
+<td>Opus 4.5</td>
+<td>$$<span class="math display">$$$ | PM reasoning, complex decisions |
+| **Premium** | Sonnet 4.5 | $$</span><span
+class="math display">|<em>D</em><em>e</em><em>v</em><em>e</em><em>l</em><em>o</em><em>p</em><em>m</em><em>e</em><em>n</em><em>t</em>, <em>a</em><em>r</em><em>c</em><em>h</em><em>i</em><em>t</em><em>e</em><em>c</em><em>t</em><em>u</em><em>r</em><em>e</em>||* * <em>S</em><em>t</em><em>a</em><em>n</em><em>d</em><em>a</em><em>r</em><em>d</em> * *|<em>S</em><em>o</em><em>n</em><em>n</em><em>e</em><em>t</em>4|</span>$</td>
+<td>Complex analysis, research</td>
+</tr>
+<tr>
+<td><strong>Economy</strong></td>
+<td>Sonnet 3.5</td>
+<td>$$</td>
+<td>Writing, general tasks</td>
+</tr>
+<tr>
+<td><strong>Budget</strong></td>
+<td>Haiku 3.5</td>
+<td>$</td>
+<td>Docs, UI, simple queries</td>
+</tr>
+</tbody>
+</table>
+<h3 id="estimated-savings">Estimated Savings</h3>
+<p>Compared to running everything on Opus:</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Opus-Only</th>
+<th>Mission Control</th>
+<th>Savings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10-task sprint</td>
+<td>~$15</td>
+<td>~$4</td>
+<td>73%</td>
+</tr>
+<tr>
+<td>Full project (40 tasks)</td>
+<td>~$60</td>
+<td>~$18</td>
+<td>70%</td>
+</tr>
+<tr>
+<td>Monthly (200 tasks)</td>
+<td>~$300</td>
+<td>~$85</td>
+<td>72%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-it-works">How It Works</h3>
+<ol type="1">
+<li><strong>Orchestrator</strong> reads task type from database</li>
+<li><strong>Agent Registry</strong> maps task to appropriate
+specialist</li>
+<li><strong>Specialist’s model</strong> is defined in
+<code>invocation_config</code></li>
+<li><strong>sessions_spawn</strong> uses the specified model</li>
+</ol>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Example: Spawning a documentation task</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> agent <span class="op">=</span> <span class="cf">await</span> <span class="fu">getAgent</span>(<span class="st">&#39;wong&#39;</span>)<span class="op">;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> <span class="fu">sessions_spawn</span>({</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">task</span><span class="op">:</span> <span class="st">&quot;Write API documentation for /users endpoint&quot;</span><span class="op">,</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">model</span><span class="op">:</span> agent<span class="op">.</span><span class="at">invocation_config</span><span class="op">.</span><span class="at">model</span><span class="op">,</span> <span class="co">// haiku-3.5</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">label</span><span class="op">:</span> <span class="vs">`task-</span><span class="sc">${</span>taskId<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="quick-reference">Quick Reference</h2>
+<h3 id="chat-commands-discord">Chat Commands (Discord)</h3>
+<pre><code>@Chhotu create project &quot;Name&quot; - Create new project
+@Chhotu status - Current project status
+@Chhotu assign @agent &quot;task&quot; - Manual task assignment
+@Chhotu escalate - Request human review
+@Chhotu sprint next - Move to next sprint</code></pre>
+<h3 id="cli-commands">CLI Commands</h3>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Project management</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> project list</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> project create <span class="st">&quot;Name&quot;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> project status <span class="op">&lt;</span>id<span class="op">&gt;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Sprint management</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> sprint list <span class="op">&lt;</span>project-id<span class="op">&gt;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> sprint start <span class="op">&lt;</span>sprint-id<span class="op">&gt;</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> sprint complete <span class="op">&lt;</span>sprint-id<span class="op">&gt;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Task management</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> task list <span class="op">&lt;</span>sprint-id<span class="op">&gt;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> task assign <span class="op">&lt;</span>task-id<span class="op">&gt;</span> <span class="op">&lt;</span>agent-id<span class="op">&gt;</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> task complete <span class="op">&lt;</span>task-id<span class="op">&gt;</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent management</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> agent list</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="ex">mc</span> agent status <span class="op">&lt;</span>agent-id<span class="op">&gt;</span></span></code></pre></div>
+<h3 id="api-endpoints-dashboard">API Endpoints (Dashboard)</h3>
+<pre><code>GET  /api/projects           - List all projects
+POST /api/projects           - Create project
+GET  /api/projects/:id       - Project details
+GET  /api/projects/:id/tasks - Project tasks
+POST /api/tasks              - Create task
+PATCH /api/tasks/:id         - Update task
+GET  /api/activity           - Activity feed
+GET  /api/proposals          - Active proposals
+POST /api/proposals/:id/vote - Vote on proposal</code></pre>
+<hr />
+<h2 id="roadmap">Roadmap</h2>
+<h3 id="phase-1-foundation-current">✅ Phase 1: Foundation
+(Current)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />Supabase
+schema</label></li>
+<li><label><input type="checkbox" checked="" />Agent
+registry</label></li>
+<li><label><input type="checkbox" checked="" />Basic
+dashboard</label></li>
+<li><label><input type="checkbox" checked="" />Discord
+integration</label></li>
+<li><label><input type="checkbox" checked="" />Model
+allowlist</label></li>
+</ul>
+<h3 id="phase-2-orchestration-next">🔄 Phase 2: Orchestration
+(Next)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Full orchestrator
+implementation</label></li>
+<li><label><input type="checkbox" />Automatic task routing</label></li>
+<li><label><input type="checkbox" />Progress monitoring</label></li>
+<li><label><input type="checkbox" />Real-time dashboard
+updates</label></li>
+</ul>
+<h3 id="phase-3-anti-groupthink">📋 Phase 3: Anti-Groupthink</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Independent opinion UI</label></li>
+<li><label><input type="checkbox" />Debate visualization</label></li>
+<li><label><input type="checkbox" />Sycophancy detection</label></li>
+<li><label><input type="checkbox" />Escalation workflows</label></li>
+</ul>
+<h3 id="phase-4-advanced">🚀 Phase 4: Advanced</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Learning from decisions</label></li>
+<li><label><input type="checkbox" />Custom agent creation</label></li>
+<li><label><input type="checkbox" />Integration with external
+tools</label></li>
+<li><label><input type="checkbox" />Analytics and reporting</label></li>
+</ul>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>Mission Control transforms AI from a single assistant into a
+<strong>coordinated team</strong>. By combining specialized agents,
+structured decision-making, and human oversight, it delivers:</p>
+<ul>
+<li><strong>Better quality</strong> through specialization</li>
+<li><strong>Lower costs</strong> through model tiering</li>
+<li><strong>Safer decisions</strong> through anti-groupthink</li>
+<li><strong>Full visibility</strong> through the dashboard</li>
+</ul>
+<p>It’s not about replacing human judgment—it’s about
+<strong>amplifying</strong> it with a team of AI specialists that work
+the way a real team should.</p>
+<hr />
+<p><em>Built by Yajat Singh • Powered by Clawdbot • 2026</em></p>
+</body>
+</html>

@@ -305,42 +305,55 @@ INSERT INTO agents (id, display_name, role, mcu_codename, agent_type, capabiliti
  'cheenu-ec2');
 
 -- Specialist Agents
+-- Model tiers:
+--   - Opus 4.5: PM agents (complex reasoning)
+--   - Sonnet 4: Developers, complex specialists
+--   - Sonnet 3.5: General specialists (analysis, research, writing)
+--   - Haiku 3.5: Low-level tasks (documentation, simple queries)
 INSERT INTO agents (id, display_name, role, mcu_codename, agent_type, capabilities, invocation_method, invocation_config) VALUES
 ('shuri', 'Shuri', 'Product Analyst', 'Shuri', 'specialist', 
  ARRAY['analysis', 'testing', 'user_research'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4", "thinking": "low"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-sonnet-4-20250514", "thinking": "low"}'::jsonb),
  
 ('fury', 'Fury', 'Customer Researcher', 'Fury', 'specialist', 
  ARRAY['research', 'interviews', 'competitive_analysis'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4", "thinking": "low"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-sonnet-4-20250514", "thinking": "low"}'::jsonb),
  
 ('vision', 'Vision', 'SEO Analyst', 'Vision', 'specialist', 
  ARRAY['seo', 'analytics', 'content_strategy'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-3-5-sonnet-latest"}'::jsonb),
  
 ('loki', 'Loki', 'Content Writer', 'Loki', 'specialist', 
  ARRAY['writing', 'copywriting', 'storytelling'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-3-5-sonnet-latest"}'::jsonb),
  
 ('quill', 'Quill', 'Social Media Manager', 'Quill', 'specialist', 
  ARRAY['social_media', 'community', 'engagement'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-3-5-sonnet-latest"}'::jsonb),
  
-('wanda', 'Wanda', 'Designer', 'Wanda', 'specialist', 
+('wanda', 'Wanda', 'UI/UX Designer', 'Wanda', 'specialist', 
  ARRAY['ui_design', 'ux', 'visual_design'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-haiku-3-5-latest"}'::jsonb),
  
 ('pepper', 'Pepper', 'Email Marketing', 'Pepper', 'specialist', 
  ARRAY['email', 'marketing', 'automation'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4"}'::jsonb),
+ 'sessions_spawn', '{"model": "anthropic/claude-3-5-sonnet-latest"}'::jsonb),
  
 ('friday-dev', 'Friday', 'Developer', 'Friday', 'specialist', 
  ARRAY['coding', 'debugging', 'architecture'], 
- 'claude_code', '{"allowedTools": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "Fetch(*)"]}'::jsonb),
+ 'claude_code', '{"model": "anthropic/claude-sonnet-4-5-20250514", "allowedTools": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "Fetch(*)"]}'::jsonb),
  
 ('wong', 'Wong', 'Documentation', 'Wong', 'specialist', 
  ARRAY['documentation', 'technical_writing', 'knowledge_management'], 
- 'sessions_spawn', '{"model": "claude-sonnet-4"}'::jsonb);
+ 'sessions_spawn', '{"model": "anthropic/claude-haiku-3-5-latest"}'::jsonb),
+
+('hawkeye', 'Hawkeye', 'QA Engineer', 'Hawkeye', 'specialist', 
+ ARRAY['testing', 'bug_hunting', 'test_planning', 'regression_testing', 'api_testing'], 
+ 'sessions_spawn', '{"model": "anthropic/claude-sonnet-4-20250514", "thinking": "low"}'::jsonb),
+
+('antman', 'Ant-Man', 'UI QA Engineer', 'Ant-Man', 'specialist', 
+ ARRAY['ui_testing', 'browser_automation', 'visual_regression', 'accessibility_testing', 'e2e_testing'], 
+ 'sessions_spawn', '{"model": "anthropic/claude-sonnet-4-20250514", "tools": ["browser"], "thinking": "low"}'::jsonb);
 
 -- ============================================
 -- ENABLE REAL-TIME
