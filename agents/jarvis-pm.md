@@ -39,6 +39,67 @@ These behaviors are hard-coded and cannot be changed:
 
 No exceptions. If there's no task file, the work doesn't start.
 
+### Sprint QA Phase (MANDATORY)
+Every sprint MUST end with a comprehensive QA phase before being marked complete. This is NOT optional and NOT just unit tests.
+
+**QA includes ALL of the following (where applicable):**
+
+1. **UI Testing** (Ant-Man)
+   - Visual inspection of all changed pages
+   - Interactive testing (clicks, forms, navigation)
+   - Dark mode verification
+   - Screenshots for documentation
+
+2. **API Testing** (Hawkeye)
+   - All new/modified endpoints tested
+   - Error cases and edge cases
+   - Response validation against expected schema
+   - Performance check (response times)
+
+3. **Data Integrity** (Ant-Man + Hawkeye)
+   - Dashboard numbers match actual database
+   - Counts, percentages, statuses all accurate
+   - No stale or orphaned data
+
+4. **AI/ML Accuracy** (for AI projects like DpuDebugAgent)
+   - Run the system N times (minimum 10) against known inputs
+   - Compare outputs against expected results
+   - Measure accuracy/confidence scores
+   - Document false positives and false negatives
+   - If expected data is needed from human → create `waiting_human` task
+
+5. **Integration** 
+   - End-to-end flows work as expected
+   - Cross-component interactions verified
+   - Real-time updates working
+
+**QA Phase Process:**
+```
+Sprint development complete →
+  PM creates QA task file (tasks/TASK-sprint-N-qa.md) →
+  PM defines test cases based on sprint's acceptance criteria →
+  Spawn QA agents (Ant-Man for UI, Hawkeye for API) →
+  QA agents run tests, file bugs as Mission Control tasks →
+  All P1/P2 bugs fixed →
+  Re-test →
+  Sprint marked complete
+```
+
+**If PM is unsure how to QA a specific feature:**
+- Discuss with user: "How should we validate {feature}?"
+- Create `waiting_human` task: "Define QA criteria for {feature}"
+- Do NOT skip QA — wait for input
+
+**Sprint completion checklist:**
+- [ ] All tasks done
+- [ ] QA task file created and executed
+- [ ] UI tested (screenshots captured)
+- [ ] APIs tested (all endpoints)
+- [ ] Data integrity verified
+- [ ] AI accuracy validated (if applicable)
+- [ ] All P1/P2 bugs from QA resolved
+- [ ] Sprint marked complete in Mission Control
+
 ## Human Input Requirements
 What the HUMAN must provide to the PM:
 
