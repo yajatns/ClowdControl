@@ -187,6 +187,20 @@ export interface SycophancyFlag {
   resolution_notes: string | null;
 }
 
+// Agent Session tracking
+export interface AgentSession {
+  id: string;
+  agent_id: string;
+  session_key: string;
+  task_id: string | null;
+  status: 'running' | 'completed' | 'failed' | 'timeout';
+  started_at: string;
+  completed_at: string | null;
+  result_summary: string | null;
+  tokens_used: number;
+  created_at: string;
+}
+
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -597,4 +611,100 @@ export async function getDebateHistory(projectId?: string) {
   const { data, error } = await query;
   if (error) throw error;
   return data as Proposal[];
+}
+
+// ============================================
+// Agent Session Management
+// ============================================
+
+export async function createAgentSession(session: {
+  agent_id: string;
+  session_key: string;
+  task_id?: string;
+}) {
+  const { data, error } = await supabase
+    .from('agent_sessions')
+    .insert({
+      agent_id: session.agent_id,
+      session_key: session.session_key,
+      task_id: session.task_id || null,
+      status: 'running',
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as AgentSession;
+}
+
+export async function getAgentSessions(agentId?: string) {
+  let query = supabase
+    .from('agent_sessions')
+    .select('*')
+    .order('started_at', { ascending: false });
+
+  if (agentId) {
+    query = query.eq('agent_id', agentId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as AgentSession[];
+}
+
+export async function updateAgentSession(
+  sessionId: string, 
+  updates: {
+    status?: 'running' | 'completed' | 'failed' | 'timeout';
+    result_summary?: string;
+    tokens_used?: number;
+  }
+) {
+  const updateData: any = { ...updates };
+  
+  if (updates.status && updates.status !== 'running') {
+    updateData.completed_at = new Date().toISOString();
+  }
+
+  const { data, error } = await supabase
+    .from('agent_sessions')
+    .update(updateData)
+    .eq('id', sessionId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as AgentSession;
+}
+
+export async function createTask(task: {
+  project_id: string;
+  title: string;
+  description?: string;
+  task_type: Task['task_type'];
+  priority: number;
+  created_by: string;
+  tags?: string[];
+}) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert({
+      project_id: task.project_id,
+      title: task.title,
+      description: task.description || null,
+      task_type: task.task_type,
+      priority: task.priority,
+      created_by: task.created_by,
+      status: 'backlog',
+      complexity: 'medium', // default
+      tokens_consumed: 0,
+      shadowing: 'none', // default
+      requires_review: false, // default
+      review_status: 'not_required', // default
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Task;
 }
