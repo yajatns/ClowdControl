@@ -278,9 +278,9 @@ function ProjectPageContent() {
                   {activeSprint.name} - Acceptance Criteria
                 </h3>
                 <div className="space-y-2">
-                  {activeSprint.acceptance_criteria.map((criteria) => (
+                  {activeSprint.acceptance_criteria.map((criteria, index) => (
                     <div
-                      key={criteria.id}
+                      key={criteria.id || `ac-${index}`}
                       className="flex items-center gap-2 text-sm"
                     >
                       <span
