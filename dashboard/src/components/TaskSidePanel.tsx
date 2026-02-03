@@ -276,10 +276,24 @@ export function TaskSidePanel({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-lg overflow-y-auto"
+        className="w-full sm:max-w-xl overflow-y-auto"
       >
-        <SheetHeader className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-          <div className="flex items-start justify-between gap-4 pr-8">
+        <SheetHeader className="border-b border-zinc-200 dark:border-zinc-800 pb-4 pr-12">
+          <div className="flex items-start justify-between gap-4">
+            {/* Edit button in header */}
+            {!editMode && (
+              <Button 
+                onClick={() => setEditMode(true)} 
+                variant="outline" 
+                size="sm"
+                className="absolute top-4 right-12 z-10"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+              </Button>
+            )}
             <div className="flex-1 min-w-0">
               {editingTitle ? (
                 <Input
@@ -339,33 +353,37 @@ export function TaskSidePanel({
           </div>
         </SheetHeader>
 
-        <div className="py-4 space-y-6">
+        <div className="px-4 pb-4 space-y-6">
           {/* View Mode */}
           {!editMode && (
             <>
               {/* Description */}
               <div>
-                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                   Description
                 </h4>
-                <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
-                  {task.description || 'No description provided.'}
-                </p>
+                <div className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                  {task.description || (
+                    <span className="italic text-zinc-500 dark:text-zinc-400">
+                      No description provided.
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Acceptance Criteria */}
               {task.acceptance_criteria && task.acceptance_criteria.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                     Acceptance Criteria
                   </h4>
-                  <ul className="space-y-1.5">
+                  <ul className="space-y-3">
                     {task.acceptance_criteria.map((criteria, index) => (
-                      <li key={index} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                        <span className="mt-0.5 w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 flex items-center justify-center text-xs shrink-0">
+                      <li key={index} className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
+                        <span className="mt-0.5 w-5 h-5 rounded border border-zinc-300 dark:border-zinc-600 flex items-center justify-center text-xs shrink-0 bg-zinc-50 dark:bg-zinc-800">
                           {index + 1}
                         </span>
-                        {criteria}
+                        <span className="leading-relaxed">{criteria}</span>
                       </li>
                     ))}
                   </ul>
@@ -375,19 +393,20 @@ export function TaskSidePanel({
               {/* Notes */}
               {task.notes && (
                 <div>
-                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
                     Notes
                   </h4>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                  <div className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
                     {task.notes}
-                  </p>
+                  </div>
                 </div>
               )}
 
               {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                     Assignee
                   </h4>
                   <DropdownMenu>
@@ -416,7 +435,7 @@ export function TaskSidePanel({
                   </DropdownMenu>
                 </div>
                 <div>
-                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                     Created By
                   </h4>
                   <p className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -424,7 +443,7 @@ export function TaskSidePanel({
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                     Created
                   </h4>
                   <p className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -432,7 +451,7 @@ export function TaskSidePanel({
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                  <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                     Updated
                   </h4>
                   <p className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -441,7 +460,7 @@ export function TaskSidePanel({
                 </div>
                 {task.deadline && (
                   <div>
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                       Deadline
                     </h4>
                     <p className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -451,7 +470,7 @@ export function TaskSidePanel({
                 )}
                 {task.completed_at && (
                   <div>
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                       Completed
                     </h4>
                     <p className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -461,7 +480,7 @@ export function TaskSidePanel({
                 )}
                 {(task.tokens_consumed ?? 0) > 0 && (
                   <div>
-                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                    <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                       Tokens Used
                     </h4>
                     <p className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -469,26 +488,17 @@ export function TaskSidePanel({
                     </p>
                   </div>
                 )}
-              </div>
-
-              {/* Edit Button */}
-              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
-                <Button onClick={() => setEditMode(true)} variant="outline" className="w-full">
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit Task
-                </Button>
+                </div>
               </div>
             </>
           )}
 
           {/* Edit Mode */}
           {editMode && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Title */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Title
                 </label>
                 <Input
@@ -500,7 +510,7 @@ export function TaskSidePanel({
 
               {/* Description */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Description
                 </label>
                 <textarea
@@ -514,7 +524,7 @@ export function TaskSidePanel({
 
               {/* Status */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Status
                 </label>
                 <select
@@ -532,7 +542,7 @@ export function TaskSidePanel({
 
               {/* Priority */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Priority
                 </label>
                 <select
@@ -550,7 +560,7 @@ export function TaskSidePanel({
 
               {/* Complexity */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Complexity
                 </label>
                 <ComplexitySelector
@@ -561,7 +571,7 @@ export function TaskSidePanel({
 
               {/* Shadowing */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Shadowing
                 </label>
                 <ShadowingSelector
@@ -572,7 +582,7 @@ export function TaskSidePanel({
 
               {/* Task Type */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Type
                 </label>
                 <select
@@ -590,7 +600,7 @@ export function TaskSidePanel({
 
               {/* Assignee */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Assignee
                 </label>
                 <select
@@ -609,7 +619,7 @@ export function TaskSidePanel({
 
               {/* Notes */}
               <div>
-                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">
                   Notes
                 </label>
                 <textarea
