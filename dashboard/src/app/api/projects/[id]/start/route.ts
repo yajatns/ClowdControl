@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { startNextTask } from '@/lib/supabase';
+import { startNextTask, getProject } from '@/lib/supabase';
+import { notifyPM } from '@/lib/discord-notify';
 
 export async function POST(
   request: NextRequest,
@@ -26,6 +27,21 @@ export async function POST(
         { status: 200 }
       );
     }
+
+    // Get project details for Discord notification
+    const project = await getProject(projectId);
+
+    // Send Discord notification to PM
+    const discordMessage = `🚀 **Start Requested**
+**Task:** ${task.title}
+**Project:** ${project.name}
+**Task ID:** \`${task.id}\`
+**Assigned to:** ${task.assigned_to || 'Not assigned'}
+**Priority:** P${task.priority}
+
+PM: Please create task file and spawn the assigned agent.`;
+
+    await notifyPM(discordMessage);
 
     return NextResponse.json({
       message: 'Task started successfully',

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Settings, Save, X } from 'lucide-react';
-import { ProjectSettings as ProjectSettingsType, ExecutionMode, SprintApproval, updateProjectSettings } from '@/lib/supabase';
+import { ProjectSettings as ProjectSettingsType, ExecutionMode, SprintApproval } from '@/lib/supabase';
 
 interface ProjectSettingsProps {
   projectId: string;
@@ -62,7 +62,18 @@ export function ProjectSettings({ projectId, settings, onSettingsUpdate, classNa
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateProjectSettings(projectId, localSettings);
+      const response = await fetch(`/api/projects/${projectId}/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(localSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update settings');
+      }
+
       onSettingsUpdate(localSettings);
       setIsOpen(false);
     } catch (error) {
