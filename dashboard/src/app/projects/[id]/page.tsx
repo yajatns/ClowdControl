@@ -29,7 +29,6 @@ import { GanttChart } from '@/components/charts/GanttChart';
 import { CriticalPath, getCriticalPathIds } from '@/components/CriticalPath';
 import { ReviewQueue } from '@/components/ReviewQueue';
 import { ProjectSettings } from '@/components/ProjectSettings';
-import { BugReportDialog } from '@/components/BugReportDialog';
 import { NotificationSetupBanner } from '@/components/NotificationSetupBanner';
 import { Rocket, LayoutGrid, List, GitBranch, BarChart3, ClipboardCheck, Play, SkipForward, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -289,14 +288,6 @@ function ProjectPageContent() {
                   <Play className="w-4 h-4" />
                   {startingTask ? 'Starting...' : '▶ Start'}
                 </button>
-              )}
-
-              {/* Bug Report - hide for viewers */}
-              {canEdit && (
-                <BugReportDialog
-                  projectId={projectId}
-                  activeSprintId={activeSprintId}
-                />
               )}
 
               {/* Settings - hide for non-admins */}
