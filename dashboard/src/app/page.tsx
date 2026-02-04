@@ -103,6 +103,12 @@ export default function Dashboard() {
                 >
                   👀 Review Queue
                 </Link>
+                <Link
+                  href="/predictions"
+                  className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  📊 Predictions
+                </Link>
               </nav>
               <span className="text-sm text-zinc-500">
                 {agents.filter((a) => a.agent_type === 'pm').length} PMs •{' '}
