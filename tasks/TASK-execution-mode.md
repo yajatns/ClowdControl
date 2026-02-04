@@ -1,8 +1,8 @@
 # Task: Add Project Execution Mode Setting
 
 ## Agent
-- **Target:** friday-dev
-- **Profile:** `agents/friday-dev.md`
+- **Target:** worker-dev
+- **Profile:** `agents/worker-dev.md`
 - **Model:** sonnet4
 
 ## Project

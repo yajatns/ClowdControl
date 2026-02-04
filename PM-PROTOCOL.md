@@ -48,7 +48,7 @@ GET /rest/v1/agents?agent_type=eq.specialist&is_active=eq.true
 Each agent has:
 ```json
 {
-  "id": "friday-dev",
+  "id": "worker-dev",
   "display_name": "Friday",
   "role": "Developer",
   "capabilities": ["coding", "debugging", "architecture"],
@@ -66,11 +66,11 @@ Match task type → agent capabilities:
 
 | Task Type | Primary Agent | Fallback |
 |-----------|--------------|----------|
-| `development`, `bug` | friday-dev (Developer) | PM does it |
+| `development`, `bug` | worker-dev (Developer) | PM does it |
 | `research` | fury (Customer Researcher) | shuri (Product Analyst) |
-| `design` | wanda (Designer) | — |
-| `testing` | hawkeye (QA Engineer) | antman (UI QA) |
-| `documentation` | wong (Documentation) | loki (Content Writer) |
+| `design` | worker-design (Designer) | — |
+| `testing` | worker-qa (QA Engineer) | antman (UI QA) |
+| `documentation` | worker-research (Documentation) | loki (Content Writer) |
 | `business`, `marketing` | quill (Social Media) / pepper (Email) | — |
 | `other` | PM evaluates and picks | — |
 
@@ -126,7 +126,7 @@ sessions_spawn(
 )
 ```
 
-#### `claude_code` (friday-dev)
+#### `claude_code` (worker-dev)
 
 1. Pre-trust the project in `~/.claude.json`
 2. Write task to `TASK.md` in project root
@@ -285,7 +285,7 @@ When execution mode changes:
 
 | ❌ Wrong | ✅ Right |
 |----------|---------|
-| PM fixes the bug itself without checking roster | PM queries agents, finds friday-dev, spawns them |
+| PM fixes the bug itself without checking roster | PM queries agents, finds worker-dev, spawns them |
 | PM says "No agent available" without checking DB | PM queries Supabase `agents` table |
 | PM checks `agents_list` (Clawdbot internal) | PM queries Supabase for Mission Control roster |
 | PM skips task file, gives instructions verbally | PM writes full task spec to `tasks/TASK-*.md` |
@@ -299,13 +299,13 @@ When execution mode changes:
 
 | ID | Name | Role | Method | Model |
 |----|------|------|--------|-------|
-| friday-dev | Friday | Developer | claude_code | sonnet-4.5 |
+| worker-dev | Developer | Developer | claude_code | sonnet-4.5 |
 | shuri | Shuri | Product Analyst | sessions_spawn | sonnet-4 |
 | fury | Fury | Customer Researcher | sessions_spawn | sonnet-4 |
-| hawkeye | Hawkeye | QA Engineer | sessions_spawn | sonnet-4 |
+| worker-qa | QA Engineer | QA Engineer | sessions_spawn | sonnet-4 |
 | antman | Ant-Man | UI QA Engineer | sessions_spawn | sonnet-4 |
-| wong | Wong | Documentation | sessions_spawn | haiku-3.5 |
-| wanda | Wanda | Designer | sessions_spawn | haiku-3.5 |
+| worker-research | Researcher | Documentation | sessions_spawn | haiku-3.5 |
+| worker-design | Designer | Designer | sessions_spawn | haiku-3.5 |
 | loki | Loki | Content Writer | sessions_spawn | sonnet-3.5 |
 | vision | Vision | SEO Analyst | sessions_spawn | sonnet-3.5 |
 | quill | Quill | Social Media Manager | sessions_spawn | sonnet-3.5 |

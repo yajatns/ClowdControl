@@ -4,8 +4,8 @@
 `550e8400-e29b-41d4-a716-446655440000`
 
 ## Agent
-- **Target:** friday-dev
-- **Profile:** `agents/friday-dev.md`
+- **Target:** worker-dev
+- **Profile:** `agents/worker-dev.md`
 - **Model:** anthropic/claude-sonnet-4-5
 
 ## Project
@@ -41,7 +41,7 @@ The Mission Control Dashboard currently has no user authentication. We need to a
 - [ ] API documentation updated with new endpoints
 
 ## Inputs
-Following Friday agent requirements:
+Following worker-dev agent requirements:
 - TASK.md file (this file) in project root
 - Project path: `/Users/dev/projects/mission-control-dashboard`
 - Branch: `feature/add-authentication`
@@ -63,7 +63,7 @@ Following Friday agent requirements:
 - Rate limiting (will be handled at infrastructure level)
 
 ## Output Expected
-Per Friday's output format:
+Per worker-dev's output format:
 - Detailed dev report with changes made
 - Commit history with atomic, descriptive commits
 - Test results showing coverage

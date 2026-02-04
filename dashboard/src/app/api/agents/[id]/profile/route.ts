@@ -13,20 +13,24 @@ const AGENT_PROFILE_MAP: Record<string, string> = {
   'cheenu': 'jarvis-pm.md', // Cheenu uses same PM profile template for now
   
   // Specialists (IDs from Supabase)
-  'friday-dev': 'friday-dev.md',
-  'friday': 'friday-dev.md', // alias
+  'worker-dev': 'worker-dev.md',
+  'friday-dev': 'worker-dev.md', // legacy alias
+  'friday': 'worker-dev.md', // legacy alias
   
   'antman': 'ant-man.md', // DB uses 'antman' (no hyphen)
   'ant-man': 'ant-man.md', // alias
   
-  'hawkeye': 'hawkeye.md',
+  'worker-qa': 'worker-qa.md',
+  'hawkeye': 'worker-qa.md', // legacy alias
   'shuri': 'shuri.md',
   'fury': 'fury.md',
   'vision': 'vision.md',
   'loki': 'loki.md',
   'quill': 'quill.md',
-  'wanda': 'wanda.md',
-  'wong': 'wong.md',
+  'worker-design': 'worker-design.md',
+  'wanda': 'worker-design.md', // legacy alias
+  'worker-research': 'worker-research.md',
+  'wong': 'worker-research.md', // legacy alias
   'pepper': 'pepper.md',
 };
 

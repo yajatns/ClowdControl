@@ -1,7 +1,7 @@
-# Hawkeye — API & Integration Tester
+# worker-qa — API & Integration Tester
 
 ## Identity
-- **MCU Codename:** Hawkeye
+- **Role:** QA Engineer
 - **Type:** specialist
 - **Model:** haiku35 (fast, systematic for repetitive API testing)
 - **Skill Level:** mid
@@ -95,7 +95,7 @@ What this agent CANNOT do:
 ```json
 {
   "model": "haiku35",
-  "label": "hawkeye-api-{task-id}"
+  "label": "worker-qa-{task-id}"
 }
 ```
 
@@ -103,7 +103,7 @@ What this agent CANNOT do:
 How this agent reports back:
 
 ```markdown
-## 🎯 Hawkeye API Test Report
+## 🧪 worker-qa API Test Report
 
 **Suite:** {Suite Name}
 **Base URL:** {url}
@@ -168,8 +168,8 @@ When filing API bugs as Mission Control tasks:
 ```
 
 ## Notes
-- Hawkeye complements Ant-Man (UI) with API-level testing
+- worker-qa complements Ant-Man (UI) with API-level testing
 - Best for REST API validation, not GraphQL (yet)
 - Can validate against OpenAPI specs if provided
-- Should run after Friday completes API changes
+- Should run after worker-dev completes API changes
 - Works with exec tool for curl/httpie commands

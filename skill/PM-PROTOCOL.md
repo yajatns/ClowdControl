@@ -49,7 +49,7 @@ AND is_active = true;
 Each agent record contains:
 ```json
 {
-  "id": "friday-dev",
+  "id": "worker-dev",
   "display_name": "Friday",
   "role": "Developer", 
   "capabilities": ["coding", "debugging", "architecture"],

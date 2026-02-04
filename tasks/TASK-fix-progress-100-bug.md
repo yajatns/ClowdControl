@@ -4,7 +4,7 @@
 `2e5a9634-5e4a-4bb0-b2b9-3be94fe9d4b8`
 
 ## Agent
-- **Target:** friday-dev
+- **Target:** worker-dev
 - **Model:** sonnet4
 
 ## Project

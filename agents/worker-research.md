@@ -1,7 +1,7 @@
-# Wong — Documentation Specialist
+# worker-research — Documentation Specialist
 
 ## Identity
-- **MCU Codename:** Wong
+- **Role:** Researcher & Documentation
 - **Type:** specialist
 - **Model:** sonnet4 (good balance of quality and cost for writing)
 - **Skill Level:** mid
@@ -133,7 +133,7 @@ What this agent CANNOT do:
 ```json
 {
   "model": "sonnet4",
-  "label": "wong-docs-{task-id}"
+  "label": "worker-research-{task-id}"
 }
 ```
 - **Skills Required:** ai-pdf-builder (for PDF output)
@@ -142,7 +142,7 @@ What this agent CANNOT do:
 How this agent reports back:
 
 ```markdown
-## 📚 Wong Documentation Report
+## 📚 worker-research Documentation Report
 
 **Task:** {Task title}
 **Doc Type:** {type}
@@ -190,7 +190,7 @@ ai-pdf-builder create \
 ```
 
 ## Notes
-- Wong is best for creating comprehensive, well-structured documentation
+- worker-research is best for creating comprehensive, well-structured documentation
 - Excels at API references and technical guides
 - Can read code to auto-generate documentation
 - PDF output is best for formal deliverables (reports, specs)

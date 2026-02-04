@@ -46,7 +46,7 @@ CREATE TABLE agents (
 Add your first developer agent:
 ```sql
 INSERT INTO agents (id, display_name, role, capabilities, invocation_method, invocation_config) VALUES
-('friday-dev', 'Friday', 'Developer', 
+('worker-dev', 'Developer', 'Developer', 
  ARRAY['coding', 'debugging', 'architecture'], 
  'claude_code',
  '{"model": "anthropic/claude-sonnet-4-5", "allowedTools": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "Fetch(*)"]}');
@@ -88,7 +88,7 @@ Write a task specification to `tasks/TASK-{slug}.md`:
 `550e8400-e29b-41d4-a716-446655440000`
 
 ## Agent
-- **Target:** friday-dev
+- **Target:** worker-dev
 - **Model:** anthropic/claude-sonnet-4-5
 
 ## Objective
