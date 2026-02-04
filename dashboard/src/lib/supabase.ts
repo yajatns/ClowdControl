@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
 
 // Types for our database
@@ -246,11 +246,29 @@ export interface AgentSession {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Use SSR-aware browser client so auth session (cookies) are attached to every request.
-// This ensures RLS policies see auth.uid() correctly.
-export const supabase = typeof window !== 'undefined'
-  ? createBrowserClient(supabaseUrl, supabaseAnonKey)
-  : createClient(supabaseUrl, supabaseAnonKey);
+// Returns the correct client for the current context:
+// - Browser: SSR-aware client with auth cookies (RLS sees auth.uid())
+// - Server (API routes): bare client (no session, used with service role or anon key)
+// createBrowserClient is a singleton — safe to call repeatedly.
+function getClient(): SupabaseClient {
+  if (typeof window !== 'undefined') {
+    return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  }
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+// Proxy ensures every property access goes through the correct client
+// for the current context — evaluated at call time, not module load time.
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getClient();
+    const value = Reflect.get(client, prop, receiver);
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
+  },
+});
 
 // Helper functions
 export async function getProjects() {

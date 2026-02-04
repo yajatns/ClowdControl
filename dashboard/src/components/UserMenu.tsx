@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { LogOut, User, ChevronDown } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export function UserMenu() {
   const { user, profile, role, signOut, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -103,6 +105,8 @@ export function UserMenu() {
               onClick={async () => {
                 setOpen(false);
                 await signOut();
+                router.push('/login');
+                router.refresh();
               }}
               className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-400 hover:bg-zinc-800 transition-colors"
             >
