@@ -33,6 +33,7 @@ import { BugReportDialog } from '@/components/BugReportDialog';
 import { NotificationSetupBanner } from '@/components/NotificationSetupBanner';
 import { Rocket, LayoutGrid, List, GitBranch, BarChart3, ClipboardCheck, Play, SkipForward, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth';
 
 type ViewMode = 'kanban' | 'list';
 type TabMode = 'tasks' | 'gantt' | 'dependencies' | 'review';
@@ -76,6 +77,8 @@ function ProjectPageContent() {
   const [startingTask, setStartingTask] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const filters = useTaskFilters();
+  const { role } = useAuth();
+  const canEdit = role === 'admin' || role === 'member';
 
   useEffect(() => {
     async function fetchData() {
@@ -276,8 +279,8 @@ function ProjectPageContent() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Start Button - only show in manual mode */}
-              {project.settings?.execution_mode === 'manual' && (
+              {/* Start Button - only show in manual mode, hide for viewers */}
+              {canEdit && project.settings?.execution_mode === 'manual' && (
                 <button
                   onClick={handleStartNextTask}
                   disabled={startingTask}
@@ -287,19 +290,23 @@ function ProjectPageContent() {
                   {startingTask ? 'Starting...' : '▶ Start'}
                 </button>
               )}
-              
-              {/* Bug Report */}
-              <BugReportDialog
-                projectId={projectId}
-                activeSprintId={activeSprintId}
-              />
 
-              {/* Settings */}
-              <ProjectSettings
-                projectId={projectId}
-                settings={project.settings}
-                onSettingsUpdate={handleSettingsUpdate}
-              />
+              {/* Bug Report - hide for viewers */}
+              {canEdit && (
+                <BugReportDialog
+                  projectId={projectId}
+                  activeSprintId={activeSprintId}
+                />
+              )}
+
+              {/* Settings - hide for non-admins */}
+              {role === 'admin' && (
+                <ProjectSettings
+                  projectId={projectId}
+                  settings={project.settings}
+                  onSettingsUpdate={handleSettingsUpdate}
+                />
+              )}
               
               {/* Sprint Planning */}
               <Link

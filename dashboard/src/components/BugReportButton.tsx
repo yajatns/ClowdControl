@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Bug } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 interface BugFormData {
   title: string;
@@ -23,6 +24,7 @@ interface BugFormData {
 }
 
 export function BugReportButton() {
+  const { role } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -107,6 +109,9 @@ export function BugReportButton() {
     // Clear message when user starts typing
     if (message) setMessage(null);
   };
+
+  // Hide for viewers
+  if (role === 'viewer') return null;
 
   return (
     <>

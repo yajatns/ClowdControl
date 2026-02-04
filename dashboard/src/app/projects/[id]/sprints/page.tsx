@@ -20,6 +20,7 @@ import { VelocityChart } from '@/components/charts/VelocityChart';
 import { TokenUsageChart } from '@/components/charts/TokenUsageChart';
 import { ArrowLeft, Plus, Rocket, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/auth';
 
 function SprintsPageContent() {
   const params = useParams();
@@ -33,6 +34,8 @@ function SprintsPageContent() {
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [showCharts, setShowCharts] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { role } = useAuth();
+  const canEdit = role === 'admin' || role === 'member';
 
   useEffect(() => {
     async function fetchData() {
@@ -151,10 +154,12 @@ function SprintsPageContent() {
                 <BarChart3 className="w-4 h-4" />
                 {showCharts ? 'Hide' : 'Show'} Charts
               </Button>
-              <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                New Sprint
-              </Button>
+              {canEdit && (
+                <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  New Sprint
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -215,10 +220,12 @@ function SprintsPageContent() {
                 <p className="text-zinc-500 dark:text-zinc-400 mb-4 max-w-sm">
                   Create your first sprint to start organizing tasks into time-boxed iterations.
                 </p>
-                <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Create First Sprint
-                </Button>
+                {canEdit && (
+                  <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Create First Sprint
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -234,13 +241,15 @@ function SprintsPageContent() {
                 ))}
 
                 {/* Add sprint card */}
-                <button
-                  onClick={() => setCreateModalOpen(true)}
-                  className="min-h-[200px] rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all flex flex-col items-center justify-center gap-2 text-zinc-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400"
-                >
-                  <Plus className="w-8 h-8" />
-                  <span className="font-medium">Add Sprint</span>
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => setCreateModalOpen(true)}
+                    className="min-h-[200px] rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all flex flex-col items-center justify-center gap-2 text-zinc-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400"
+                  >
+                    <Plus className="w-8 h-8" />
+                    <span className="font-medium">Add Sprint</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
