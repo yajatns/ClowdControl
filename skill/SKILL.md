@@ -19,16 +19,16 @@ All work flows through specialized agents — the PM never executes tasks direct
 
 ## Prerequisites
 
-1. **Agent Roster Database**: Set up a database with agent profiles (see templates/)
+1. **AgentRegistry Database**: Set up a database with agent profiles (see templates/)
 2. **Project Structure**: Tasks directory for detailed specifications
 3. **Agent Skills**: Install relevant skills for your specialist agents
 4. **Monitoring Setup**: Cron job capability for automated monitoring
 
 ## Quick Start
 
-### 1. Set Up Agent Roster
+### 1. Set Up AgentRegistry
 
-Create your specialist agents database with this schema:
+Create your AgentRegistry database with this schema:
 
 ```sql
 CREATE TABLE agents (
@@ -126,7 +126,7 @@ Extract task details:
 - Priority (P1-P4)
 - Project ID
 
-### Step 2: Query Agent Roster
+### Step 2: Query AgentRegistry
 ```python
 # Pseudo-code for agent matching
 available_agents = query_database(
@@ -329,7 +329,7 @@ Agents report via standardized formats (see agent profiles in examples/).
 
 Replace these with your actual values:
 
-- `{your-database-url}` → Your agent roster database
+- `{your-database-url}` → Your AgentRegistry database
 - `{your-channel-id}` → Discord/Slack channel for notifications  
 - `{project-workspace}` → Your projects directory
 - `{your-clawdbot-endpoint}` → Webhook endpoint URL

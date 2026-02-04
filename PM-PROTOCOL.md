@@ -85,9 +85,9 @@ Extract from the request:
 - **Priority** (P1-P4)
 - **Project ID**
 
-### Step 2: Query Agent Roster
+### Step 2: Query AgentRegistry
 
-Fetch specialist agents from Supabase:
+Fetch specialist agents from the AgentRegistry (Supabase):
 
 ```
 GET /rest/v1/agents?agent_type=eq.specialist&is_active=eq.true
@@ -114,7 +114,8 @@ Match task type → agent capabilities:
 
 | Task Type | Primary Agent | Fallback |
 |-----------|--------------|----------|
-| `development`, `bug` | worker-dev (Developer) | PM does it |
+| `development` (complex) | worker-dev (Senior Developer) | worker-dev-mid |
+| `development` (standard), `bug` | worker-dev-mid (Mid Developer) | worker-dev |
 | `research` | worker-customer (Customer Researcher) | worker-analyst (Product Analyst) |
 | `design` | worker-design (Designer) | — |
 | `testing` | worker-qa (QA Engineer) | worker-ui-qa (UI QA) |
@@ -156,11 +157,12 @@ Write a detailed task specification to `tasks/TASK-{slug}.md`. For mastery-enabl
 
 ## Delegation Instructions
 Based on complexity and domain, consider delegating to:
-- **Low complexity** → junior-dev (fast, cost-effective)
-- **High complexity** → senior-dev (architecture, complex logic)
-- **Frontend focus** → frontend-dev (React, UI expertise)
-- **Backend focus** → backend-dev (API, database expertise)
-- **Multi-component** → project-manager (task breakdown)
+- **Low complexity** → junior-dev (fast, cost-effective — Haiku)
+- **Standard complexity** → mid-dev (balanced — Sonnet 4)
+- **High complexity** → senior-dev (architecture, complex logic — Sonnet 4.5)
+- **Frontend focus** → frontend-dev (React, UI expertise — Sonnet 4.5)
+- **Backend focus** → backend-dev (API, database expertise — Sonnet 4.5)
+- **Multi-component** → project-manager (task breakdown — Sonnet 4.5)
 
 ## Acceptance Criteria
 - [ ] {Criterion 1}
@@ -491,21 +493,24 @@ When the PM Review (Gate 2) finds issues, the PM must classify each:
 
 ---
 
-## Agent Roster (Current)
+## AgentRegistry (Current)
 
-| ID | Name | Role | Method | Model |
-|----|------|------|--------|-------|
-| worker-dev | Developer | Developer | claude_code | sonnet-4.5 |
-| worker-analyst | Product Analyst | Product Analyst | sessions_spawn | sonnet-4 |
-| worker-customer | Customer Researcher | Customer Researcher | sessions_spawn | sonnet-4 |
-| worker-qa | QA Engineer | QA Engineer | sessions_spawn | sonnet-4 |
-| worker-ui-qa | UI QA Engineer | UI QA Engineer | sessions_spawn | sonnet-4 |
-| worker-research | Researcher | Documentation | sessions_spawn | haiku-3.5 |
-| worker-design | Designer | Designer | sessions_spawn | haiku-3.5 |
-| worker-content | Content Writer | Content Writer | sessions_spawn | sonnet-3.5 |
-| worker-seo | SEO Analyst | SEO Analyst | sessions_spawn | sonnet-3.5 |
-| worker-social | Social Media Manager | Social Media Manager | sessions_spawn | sonnet-3.5 |
-| worker-marketing | Email Marketing | Email Marketing | sessions_spawn | sonnet-3.5 |
+| ID | Name | Role | Method | Model | Tier |
+|----|------|------|--------|-------|------|
+| chhotu | Chhotu | Project Manager | — | opus-4.5 | 🎯 PM |
+| cheenu | Cheenu | Project Manager | — | — | 🎯 PM |
+| worker-dev | Developer (Senior) | Developer | claude_code | sonnet-4.5 | 💎 Senior |
+| worker-dev-mid | Developer (Mid) | Developer | claude_code | sonnet-4 | 🔵 Mid |
+| worker-analyst | Product Analyst | Product Analyst | sessions_spawn | sonnet-4 | 🔵 Mid |
+| worker-customer | Customer Researcher | Customer Researcher | sessions_spawn | sonnet-4 | 🔵 Mid |
+| worker-qa | QA Engineer | QA Engineer | sessions_spawn | sonnet-4 | 🔵 Mid |
+| worker-ui-qa | UI QA Engineer | UI QA Engineer | sessions_spawn | sonnet-4 | 🔵 Mid |
+| worker-content | Content Writer | Content Writer | sessions_spawn | sonnet-3.5 | 🟢 Standard |
+| worker-seo | SEO Analyst | SEO Analyst | sessions_spawn | sonnet-3.5 | 🟢 Standard |
+| worker-social | Social Media Manager | Social Media Manager | sessions_spawn | sonnet-3.5 | 🟢 Standard |
+| worker-marketing | Email Marketing | Email Marketing | sessions_spawn | sonnet-3.5 | 🟢 Standard |
+| worker-research | Researcher | Documentation | sessions_spawn | haiku-3.5 | ⚪ Budget |
+| worker-design | Designer | Designer | sessions_spawn | haiku-3.5 | ⚪ Budget |
 
 ---
 
@@ -513,14 +518,14 @@ When the PM Review (Gate 2) finds issues, the PM must classify each:
 
 This protocol is designed to be **portable**. Any Clawdbot instance acting as PM can follow it:
 
-1. The agent roster lives in **Supabase** (not local config) — shared across all PMs
+1. The **AgentRegistry** lives in **Supabase** (not local config) — shared across all PMs
 2. Task files use a **standard template** in the project's `tasks/` directory
 3. Invocation methods are **self-describing** — the DB tells you how to spawn each agent
 4. Any PM reads this doc + queries the DB = ready to dispatch
 
 To share with another Clawdbot PM (e.g., Cheenu):
 - They read `PM-PROTOCOL.md` from the shared repo
-- They query the same Supabase for the agent roster
+- They query the same Supabase AgentRegistry
 - They follow the same dispatch steps
 
 ---

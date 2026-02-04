@@ -36,9 +36,9 @@ Extract from the request:
 - **Priority** (P1-P4)
 - **Project ID**
 
-### Step 2: Query Agent Roster
+### Step 2: Query AgentRegistry
 
-Fetch specialist agents from database:
+Fetch specialist agents from the AgentRegistry:
 
 ```sql
 SELECT * FROM agents 
@@ -317,7 +317,7 @@ To deploy on a new PM:
 - Install this skill
 - Configure database connection
 - Set up channel notifications
-- Populate agent roster
+- Populate AgentRegistry
 - Test with a simple task
 
 ---
