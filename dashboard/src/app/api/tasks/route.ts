@@ -1,6 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createTask, Task, updateTaskStatus, getProjectSprints, supabase } from '@/lib/supabase';
 
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get('projectId');
+    const sprintId = searchParams.get('sprintId');
+
+    if (!projectId && !sprintId) {
+      return NextResponse.json(
+        { error: 'Either projectId or sprintId query parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    let query = supabase
+      .from('tasks')
+      .select('*')
+      .order('priority', { ascending: false });
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    if (sprintId) {
+      query = query.eq('sprint_id', sprintId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return NextResponse.json(data as Task[], { status: 200 });
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch tasks' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

@@ -134,6 +134,7 @@ export interface Task {
   notes: string | null;
   complexity: TaskComplexity;
   tokens_consumed: number;
+  estimated_tokens: number | null;
   // Phase 5: Shadowing
   shadowing: ShadowingMode;
   // Phase 6: Review workflow

@@ -44,9 +44,11 @@ function formatCostInline(tokens: number): string {
   return `$${cost.toFixed(2)}`;
 }
 
-function TokenUsageDisplay({ tokens, estimatedHours }: { tokens: number; estimatedHours?: number | null }) {
-  const estimatedTokens = estimatedHours ? estimateTokensFromHours(estimatedHours) : null;
+function TokenUsageDisplay({ tokens, estimatedTokens: directEstimate, estimatedHours }: { tokens: number; estimatedTokens?: number | null; estimatedHours?: number | null }) {
+  // Prefer direct estimated_tokens, fall back to derived from estimated_hours
+  const estimatedTokens = directEstimate ?? (estimatedHours ? estimateTokensFromHours(estimatedHours) : null);
   const ratio = estimatedTokens ? tokens / estimatedTokens : null;
+  const accuracy = ratio !== null ? Math.round((1 - Math.abs(1 - ratio)) * 100) : null;
 
   // Color coding: green (under estimate), yellow (close), red (over estimate)
   let colorClass = 'text-zinc-700 dark:text-zinc-300';
@@ -61,22 +63,42 @@ function TokenUsageDisplay({ tokens, estimatedHours }: { tokens: number; estimat
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <p className={`text-sm font-medium tabular-nums ${colorClass}`}>
         {formatTokens(tokens)}
         <span className="ml-1.5 text-xs font-normal text-zinc-400">
           (~{formatCostInline(tokens)})
         </span>
       </p>
-      {estimatedTokens && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
-          Est: {formatTokens(estimatedTokens)}
+      {estimatedTokens != null && estimatedTokens > 0 && (
+        <>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+            Est: {formatTokens(estimatedTokens)}
+            <span className="ml-1 text-zinc-400">(~{formatCostInline(estimatedTokens)})</span>
+          </p>
           {ratio !== null && (
-            <span className={`ml-1.5 ${colorClass}`}>
-              ({ratio <= 1 ? `${((1 - ratio) * 100).toFixed(0)}% under` : `${((ratio - 1) * 100).toFixed(0)}% over`})
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    ratio <= 0.8 ? 'bg-green-500' : ratio <= 1.2 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(ratio * 100, 100)}%` }}
+                />
+              </div>
+              <span className={`text-xs font-medium tabular-nums ${colorClass}`}>
+                {ratio <= 1
+                  ? `${((1 - ratio) * 100).toFixed(0)}% under`
+                  : `${((ratio - 1) * 100).toFixed(0)}% over`}
+              </span>
+            </div>
           )}
-        </p>
+          {accuracy !== null && (
+            <p className="text-xs text-zinc-400 tabular-nums">
+              Accuracy: {Math.max(accuracy, 0)}%
+            </p>
+          )}
+        </>
       )}
     </div>
   );
@@ -541,7 +563,7 @@ export function TaskSidePanel({
                     <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                       Tokens Used
                     </h4>
-                    <TokenUsageDisplay tokens={task.tokens_consumed ?? 0} estimatedHours={(task as TaskWithEstimate).estimated_hours} />
+                    <TokenUsageDisplay tokens={task.tokens_consumed ?? 0} estimatedTokens={task.estimated_tokens} estimatedHours={(task as TaskWithEstimate).estimated_hours} />
                   </div>
                 )}
                 </div>

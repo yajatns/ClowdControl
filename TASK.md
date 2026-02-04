@@ -1,58 +1,47 @@
-# Task: Rename "sub-agents" to "workers" throughout codebase and docs
+# Task: Add Dashboard API GET Handlers + Budget Prediction Tracking
 
-## Objective
-Replace all references to "sub-agent" with "worker" across the entire Mission Control project. This establishes the naming convention: Agent = persistent identity with memory, Worker = temporary stateless task executor.
+## Combined Task — Two Features
 
-## Context
-Per team meeting (2026-02-02): "sub-agent" is confusing terminology. The agreed convention is:
-- **Agent** = persistent identity + memory + personality (Chhotu, Cheenu)
-- **Worker** = spawned task executor, stateless, temporary, dies after task (friday-dev, hawkeye, wong)
-- **Skill** = a capability package
+### Feature 1: Dashboard API GET Handlers (BUG FIX)
+The dashboard has no server-side GET API for reading data. External tools and PM automation must query Supabase directly.
 
-## Requirements
+**Create/Update:**
 
-### 1. Code Changes
-Search and replace in `dashboard/src/`:
-- UI labels: "sub-agent" → "worker", "Sub-Agent" → "Worker"
-- Variable names: `subAgent` → `worker`, `subAgentId` → `workerId` (where applicable)
-- Comments referencing sub-agents
-- Component names if any reference sub-agents
+1. `dashboard/src/app/api/projects/route.ts` — ADD this file:
+   - `GET` → returns all projects from Supabase
+   
+2. `dashboard/src/app/api/projects/[id]/route.ts` — ADD GET handler:
+   - `GET` → returns single project by ID with settings
 
-### 2. Documentation Changes
-Update these files:
-- `PM-PROTOCOL.md` — all references to sub-agents
-- `skill/SKILL.md` — skill package docs
-- `skill/PM-PROTOCOL.md` — portable protocol
-- `agents/README.md` — if exists
-- `agents/*.md` — agent profile files (update terminology in descriptions)
-- `SETUP.md` — setup guide
-- `PLAN.md` — project plan
+3. `dashboard/src/app/api/tasks/route.ts` — ADD GET handler:
+   - `GET ?projectId=xxx` → returns tasks for a project
+   - `GET ?sprintId=xxx` → returns tasks for a sprint
+   - Keep existing POST/PATCH handlers
 
-### 3. Database
-- Check if `agent_type` values in Supabase agents table use "sub-agent" — if so, update to "specialist" or "worker"
-- The `agents` table column names stay the same (they're generic enough)
+Use the existing `supabaseAdmin` client from `src/lib/supabase.ts`.
 
-### 4. Don't Break Things
-- Don't rename the `agents/` directory (it contains worker profiles, name is fine)
-- Don't rename Supabase table names
-- Don't change API route paths
-- Keep git history clean — one logical commit
+### Feature 2: Budget Prediction — Estimated vs Actual Tokens
 
-## Files to Search
-```bash
-grep -r "sub.agent" dashboard/src/ --include="*.ts" --include="*.tsx" -l
-grep -r "sub.agent" *.md agents/*.md skill/*.md -l
-```
+The `tasks` table has `tokens_consumed` (int) and `estimated_hours` (decimal). Add `estimated_tokens` tracking:
+
+1. **Task detail panel** (`TaskSidePanel.tsx` or similar):
+   - If `tokens_consumed` > 0, show actual tokens
+   - If both estimated and actual exist, show comparison with accuracy %
+   
+2. **Sprint velocity view** (optional, if time permits):
+   - Average tokens per task type
+   - Estimation accuracy trend
+
+Note: The BudgetTracker widget was just built in the previous task. This adds the estimation comparison layer on top.
 
 ## Acceptance Criteria
-- [x] No references to "sub-agent" remain in code or docs
-- [x] Worker terminology used consistently
-- [x] Dashboard UI shows "worker" not "sub-agent" where applicable (no UI references existed)
-- [x] All markdown docs updated
-- [ ] Single clean commit
-- [ ] App still builds without errors (`npm run build`)
+- [ ] `GET /api/projects` returns project list (200)
+- [ ] `GET /api/projects/:id` returns single project (200) or 404
+- [ ] `GET /api/tasks?projectId=xxx` returns filtered tasks (200)
+- [ ] `GET /api/tasks?sprintId=xxx` returns filtered tasks (200)
+- [ ] Existing POST/PATCH on tasks still works
+- [ ] Token estimation vs actual comparison visible in task detail
+- [ ] `npm run build` passes
 
-## Out of Scope
-- Renaming the Avengers names (separate task)
-- Changing Supabase table/column names
-- Renaming agent profile filenames
+## Project Location
+`/Users/yajat/workspace/projects/mission-control/dashboard/`
