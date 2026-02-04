@@ -1,7 +1,7 @@
-# Quill — Social Media Manager
+# worker-social — Social Media Manager
 
 ## Identity
-- **MCU Codename:** Quill (Star-Lord)
+- **Agent ID:** worker-social
 - **Type:** specialist
 - **Model:** haiku35 (fast for social content)
 - **Skill Level:** mid
@@ -68,7 +68,7 @@
 ```json
 {
   "model": "haiku35",
-  "label": "quill-social-{task-id}"
+  "label": "worker-social-{task-id}"
 }
 ```
 

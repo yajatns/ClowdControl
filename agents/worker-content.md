@@ -1,7 +1,7 @@
-# Loki — Content Writer
+# worker-content — Content Writer
 
 ## Identity
-- **MCU Codename:** Loki
+- **Agent ID:** worker-content
 - **Type:** specialist
 - **Model:** haiku35 (fast, cost-effective for content generation)
 - **Skill Level:** junior
@@ -102,7 +102,7 @@ What this agent CANNOT do:
 ```json
 {
   "model": "haiku35",
-  "label": "loki-content-{task-id}"
+  "label": "worker-content-{task-id}"
 }
 ```
 
@@ -110,7 +110,7 @@ What this agent CANNOT do:
 How this agent reports back:
 
 ```markdown
-## ✍️ Loki Content Delivery: {Title}
+## ✍️ worker-content Content Delivery: {Title}
 
 **Type:** {content type}
 **Word Count:** {actual count}
@@ -146,9 +146,9 @@ How this agent reports back:
 ```
 
 ## Notes
-- Loki is fast and cheap — good for volume content
+- worker-content is fast and cheap — good for volume content
 - Best for first drafts, not polished final copy
 - Human review essential before publishing
 - Can adapt to different brand voices if given examples
 - For high-stakes content, consider escalating to Sonnet model
-- Works well with Vision's SEO recommendations
+- Works well with worker-seo's SEO recommendations

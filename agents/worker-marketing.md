@@ -1,7 +1,7 @@
-# Pepper — Email Marketing Specialist
+# worker-marketing — Email Marketing Specialist
 
 ## Identity
-- **MCU Codename:** Pepper (Potts)
+- **Agent ID:** worker-marketing
 - **Type:** specialist
 - **Model:** haiku35 (efficient for email content)
 - **Skill Level:** mid
@@ -75,7 +75,7 @@
 ```json
 {
   "model": "haiku35",
-  "label": "pepper-email-{task-id}"
+  "label": "worker-marketing-{task-id}"
 }
 ```
 

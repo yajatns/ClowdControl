@@ -1,7 +1,7 @@
-# Ant-Man — UI QA Engineer
+# worker-ui-qa — UI QA Engineer
 
 ## Identity
-- **MCU Codename:** Ant-Man
+- **Agent ID:** worker-ui-qa
 - **Type:** specialist
 - **Model:** haiku35 (fast, cost-effective for repetitive UI checks)
 - **Skill Level:** mid
@@ -140,7 +140,7 @@ What this agent CANNOT do:
 ```json
 {
   "model": "haiku35",
-  "label": "antman-qa-{task-id}"
+  "label": "worker-ui-qa-{task-id}"
 }
 ```
 
@@ -186,7 +186,7 @@ When filing bugs as Mission Control tasks:
 ```
 
 ## Notes
-- Ant-Man excels at systematic, repetitive testing
+- worker-ui-qa excels at systematic, repetitive testing
 - Best for UI/UX validation, not API or unit testing
 - Screenshots should be saved to project's `qa-reports/` directory
 - Can be run in parallel with development work

@@ -1,7 +1,7 @@
-# Fury — Customer Research Lead
+# worker-customer — Customer Research Lead
 
 ## Identity
-- **MCU Codename:** Fury
+- **Agent ID:** worker-customer
 - **Type:** specialist
 - **Model:** sonnet4 (needs analytical depth)
 - **Skill Level:** senior
@@ -67,7 +67,7 @@
 {
   "model": "sonnet4",
   "thinking": "low",
-  "label": "fury-research-{task-id}"
+  "label": "worker-customer-{task-id}"
 }
 ```
 

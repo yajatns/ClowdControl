@@ -67,11 +67,11 @@ Match task type → agent capabilities:
 | Task Type | Primary Agent | Fallback |
 |-----------|--------------|----------|
 | `development`, `bug` | worker-dev (Developer) | PM does it |
-| `research` | fury (Customer Researcher) | shuri (Product Analyst) |
+| `research` | worker-customer (Customer Researcher) | worker-analyst (Product Analyst) |
 | `design` | worker-design (Designer) | — |
-| `testing` | worker-qa (QA Engineer) | antman (UI QA) |
-| `documentation` | worker-research (Documentation) | loki (Content Writer) |
-| `business`, `marketing` | quill (Social Media) / pepper (Email) | — |
+| `testing` | worker-qa (QA Engineer) | worker-ui-qa (UI QA) |
+| `documentation` | worker-research (Documentation) | worker-content (Content Writer) |
+| `business`, `marketing` | worker-social (Social Media) / worker-marketing (Email) | — |
 | `other` | PM evaluates and picks | — |
 
 **Selection criteria:**
@@ -317,7 +317,7 @@ A sprint is **NOT complete** until both closing gates pass. These are mandatory 
 
 ### Gate 1: QA Evaluation Run
 
-**Who:** QA agent (worker-qa or antman)
+**Who:** QA agent (worker-qa or worker-ui-qa)
 **When:** After all non-QA tasks are marked `done`
 **What:** Run the full evaluation test suite against the sprint's deliverables
 
@@ -380,7 +380,35 @@ The PM Review is a **learning mechanism**. Over time, the PM builds pattern reco
 - **Update PM-PROTOCOL.md** — When a new anti-pattern or best practice emerges from reviews, add it to this doc
 - **Log lessons in closing report** — Every sprint closing report has a "Lessons Learned" section that feeds forward
 
-> **Sprint Victory Condition:** Both gates pass. QA evaluation ✅ AND PM review complete (all tasks graded, follow-ups created for gaps). Only then does the PM announce sprint completion.
+> **Sprint Victory Condition:** Both gates pass. QA evaluation ✅ AND PM review complete (all tasks graded). Only then does the PM announce sprint completion.
+
+### Blocking vs Non-Blocking Failures
+
+When the PM Review (Gate 2) finds issues, the PM must classify each:
+
+**🚫 Blocking (Sprint stays open):**
+- Task was fundamentally incomplete (major acceptance criteria missed)
+- Core deliverable doesn't work as intended
+- The gap would make the sprint's goal meaningless if shipped
+
+**For blocking failures:**
+1. Do NOT close the sprint
+2. Create fix tasks **in the current sprint** (not next sprint)
+3. Dispatch immediately to the appropriate worker
+4. Re-run both closing gates after fixes land
+5. Sprint stays open until all blocking issues are resolved
+
+**⚠️ Non-Blocking (Sprint can close):**
+- Minor polish, edge cases, nice-to-haves
+- Task met intent but missed a small detail
+- Cosmetic issues
+
+**For non-blocking failures:**
+1. Create follow-up tasks in the **next sprint's backlog**
+2. Note them in the closing report
+3. Sprint can close
+
+> **Rule of thumb:** If you'd be embarrassed showing the sprint deliverable to the human with this gap, it's blocking.
 
 ---
 
@@ -406,16 +434,16 @@ The PM Review is a **learning mechanism**. Over time, the PM builds pattern reco
 | ID | Name | Role | Method | Model |
 |----|------|------|--------|-------|
 | worker-dev | Developer | Developer | claude_code | sonnet-4.5 |
-| shuri | Shuri | Product Analyst | sessions_spawn | sonnet-4 |
-| fury | Fury | Customer Researcher | sessions_spawn | sonnet-4 |
+| worker-analyst | Product Analyst | Product Analyst | sessions_spawn | sonnet-4 |
+| worker-customer | Customer Researcher | Customer Researcher | sessions_spawn | sonnet-4 |
 | worker-qa | QA Engineer | QA Engineer | sessions_spawn | sonnet-4 |
-| antman | Ant-Man | UI QA Engineer | sessions_spawn | sonnet-4 |
+| worker-ui-qa | UI QA Engineer | UI QA Engineer | sessions_spawn | sonnet-4 |
 | worker-research | Researcher | Documentation | sessions_spawn | haiku-3.5 |
 | worker-design | Designer | Designer | sessions_spawn | haiku-3.5 |
-| loki | Loki | Content Writer | sessions_spawn | sonnet-3.5 |
-| vision | Vision | SEO Analyst | sessions_spawn | sonnet-3.5 |
-| quill | Quill | Social Media Manager | sessions_spawn | sonnet-3.5 |
-| pepper | Pepper | Email Marketing | sessions_spawn | sonnet-3.5 |
+| worker-content | Content Writer | Content Writer | sessions_spawn | sonnet-3.5 |
+| worker-seo | SEO Analyst | SEO Analyst | sessions_spawn | sonnet-3.5 |
+| worker-social | Social Media Manager | Social Media Manager | sessions_spawn | sonnet-3.5 |
+| worker-marketing | Email Marketing | Email Marketing | sessions_spawn | sonnet-3.5 |
 
 ---
 

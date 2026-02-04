@@ -1,7 +1,7 @@
-# Shuri — Product Analyst / QA Lead
+# worker-analyst — Product Analyst / QA Lead
 
 ## Identity
-- **MCU Codename:** Shuri
+- **Agent ID:** worker-analyst
 - **Type:** specialist
 - **Model:** sonnet4 (needs analytical reasoning)
 - **Skill Level:** senior
@@ -84,7 +84,7 @@ What this agent CANNOT do:
 {
   "model": "sonnet4",
   "thinking": "low",
-  "label": "shuri-analysis-{task-id}"
+  "label": "worker-analyst-{task-id}"
 }
 ```
 
@@ -144,8 +144,8 @@ How this agent reports back:
 ```
 
 ## Notes
-- Shuri bridges product and engineering
+- worker-analyst bridges product and engineering
 - Best for requirements gathering and QA strategy
-- Creates test cases that Ant-Man/Hawkeye can execute
+- Creates test cases that worker-ui-qa/worker-qa can execute
 - Should review specs with human PM before implementation
 - Can synthesize user feedback into actionable insights

@@ -17,21 +17,36 @@ const AGENT_PROFILE_MAP: Record<string, string> = {
   'friday-dev': 'worker-dev.md', // legacy alias
   'friday': 'worker-dev.md', // legacy alias
   
-  'antman': 'ant-man.md', // DB uses 'antman' (no hyphen)
-  'ant-man': 'ant-man.md', // alias
+  'worker-ui-qa': 'worker-ui-qa.md',
+  'antman': 'worker-ui-qa.md', // legacy alias
+  'ant-man': 'worker-ui-qa.md', // legacy alias
   
   'worker-qa': 'worker-qa.md',
   'hawkeye': 'worker-qa.md', // legacy alias
-  'shuri': 'shuri.md',
-  'fury': 'fury.md',
-  'vision': 'vision.md',
-  'loki': 'loki.md',
-  'quill': 'quill.md',
+  
+  'worker-analyst': 'worker-analyst.md',
+  'shuri': 'worker-analyst.md', // legacy alias
+  
+  'worker-customer': 'worker-customer.md',
+  'fury': 'worker-customer.md', // legacy alias
+  
+  'worker-seo': 'worker-seo.md',
+  'vision': 'worker-seo.md', // legacy alias
+  
+  'worker-content': 'worker-content.md',
+  'loki': 'worker-content.md', // legacy alias
+  
+  'worker-social': 'worker-social.md',
+  'quill': 'worker-social.md', // legacy alias
+  
+  'worker-marketing': 'worker-marketing.md',
+  'pepper': 'worker-marketing.md', // legacy alias
+  
   'worker-design': 'worker-design.md',
   'wanda': 'worker-design.md', // legacy alias
+  
   'worker-research': 'worker-research.md',
   'wong': 'worker-research.md', // legacy alias
-  'pepper': 'pepper.md',
 };
 
 export async function GET(
