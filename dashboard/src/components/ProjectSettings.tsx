@@ -444,7 +444,7 @@ export function ProjectSettings({ projectId, project, settings, onSettingsUpdate
                     >
                       <div className="flex-1">
                         <div className="text-sm font-medium text-zinc-900 dark:text-white">
-                          {member.profile.full_name || member.profile.email}
+                          {member.profile.display_name || member.profile.email}
                         </div>
                         <div className="text-xs text-zinc-500 dark:text-zinc-400">
                           {member.role} • {member.profile.email}
@@ -483,7 +483,7 @@ export function ProjectSettings({ projectId, project, settings, onSettingsUpdate
                   <option value="">Select user...</option>
                   {availableUsers.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.full_name || user.email} ({user.email})
+                      {user.display_name || user.email} ({user.email})
                     </option>
                   ))}
                 </select>

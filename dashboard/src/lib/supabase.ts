@@ -110,7 +110,8 @@ export interface ProjectMember {
 export interface Profile {
   id: string;
   email: string;
-  full_name: string | null;
+  display_name: string | null;
+  full_name?: string | null; // alias for display_name compatibility
   avatar_url: string | null;
   role: 'admin' | 'user';
   created_at: string;
@@ -903,30 +904,51 @@ export async function updateProjectVisibility(
 }
 
 export async function getProjectMembers(projectId: string): Promise<(ProjectMember & { profile: Profile })[]> {
-  const { data, error } = await supabase
+  // Get members first
+  const { data: members, error: membersError } = await supabase
     .from('project_members')
-    .select(`
-      *,
-      profile:profiles(id, email, full_name, avatar_url)
-    `)
+    .select('*')
     .eq('project_id', projectId)
-    .order('joined_at', { ascending: true });
+    .order('created_at', { ascending: true });
 
-  if (error) throw error;
-  return data as (ProjectMember & { profile: Profile })[];
+  if (membersError) throw membersError;
+  if (!members || members.length === 0) return [];
+
+  // Then get profiles for those user_ids
+  const userIds = members.map(m => m.user_id);
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('id, email, display_name, avatar_url')
+    .in('id', userIds);
+
+  if (profilesError) throw profilesError;
+
+  // Join them manually
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+  return members.map(m => ({
+    ...m,
+    profile: profileMap.get(m.user_id) || { id: m.user_id, email: 'unknown', display_name: null, avatar_url: null },
+  })) as (ProjectMember & { profile: Profile })[];
 }
 
 export async function getAvailableUsers(projectId: string): Promise<Profile[]> {
-  // Get users who are not already members of this project
-  const { data, error } = await supabase
+  // Get current member user_ids first
+  const { data: members } = await supabase
+    .from('project_members')
+    .select('user_id')
+    .eq('project_id', projectId);
+
+  const memberIds = (members || []).map(m => m.user_id);
+
+  // Get all profiles, then filter out existing members
+  const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, email, full_name, avatar_url, role, created_at')
-    .not('id', 'in', `(
-      SELECT user_id FROM project_members WHERE project_id = '${projectId}'
-    )`);
+    .select('id, email, display_name, avatar_url, role, created_at');
 
   if (error) throw error;
-  return data as Profile[];
+
+  // Filter out users who are already members
+  return (profiles || []).filter(p => !memberIds.includes(p.id)) as Profile[];
 }
 
 export async function addProjectMember(member: {
