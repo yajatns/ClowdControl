@@ -368,6 +368,153 @@ export function ProjectSettings({ projectId, project, settings, onSettingsUpdate
             </div>
           </div>
 
+          {/* Project Visibility */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Project Visibility
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-start gap-3 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="public"
+                  checked={localVisibility === 'public'}
+                  onChange={(e) => setLocalVisibility(e.target.value as 'public' | 'private')}
+                  className="mt-1 text-blue-600 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
+                    <Globe className="w-4 h-4" />
+                    Public
+                  </div>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Anyone can view this project and its tasks
+                  </p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="private"
+                  checked={localVisibility === 'private'}
+                  onChange={(e) => setLocalVisibility(e.target.value as 'public' | 'private')}
+                  className="mt-1 text-blue-600 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
+                    <Lock className="w-4 h-4" />
+                    Private
+                  </div>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Only project members can access this project
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Project Members */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Project Members
+              </label>
+            </div>
+
+            {/* Current Members */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Current Members
+              </label>
+              {loadingMembers ? (
+                <div className="flex items-center gap-2 text-sm text-zinc-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading members...
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-2 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                          {member.profile.full_name || member.profile.email}
+                        </div>
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {member.role} • {member.profile.email}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveMember(member.user_id)}
+                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                        title="Remove member"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {members.length === 0 && (
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-2">
+                      No members added yet
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Add Member */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Add Member
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={newMemberUserId}
+                  onChange={(e) => setNewMemberUserId(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={addingMember}
+                >
+                  <option value="">Select user...</option>
+                  {availableUsers.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.full_name || user.email} ({user.email})
+                    </option>
+                  ))}
+                </select>
+                
+                <select
+                  value={newMemberRole}
+                  onChange={(e) => setNewMemberRole(e.target.value as 'admin' | 'member' | 'viewer')}
+                  className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={addingMember}
+                >
+                  <option value="viewer">Viewer</option>
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+                
+                <button
+                  onClick={handleAddMember}
+                  disabled={!newMemberUserId || addingMember}
+                  className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {addingMember ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Divider */}
           <div className="border-t border-zinc-200 dark:border-zinc-700" />
 
