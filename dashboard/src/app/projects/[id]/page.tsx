@@ -23,6 +23,7 @@ import { TaskFilters, useTaskFilters, filterTasks } from '@/components/TaskFilte
 import { TaskSidePanel } from '@/components/TaskSidePanel';
 import { ProjectProgress } from '@/components/ProjectProgress';
 import { BudgetProgressBar } from '@/components/BudgetProgressBar';
+import { BudgetTracker } from '@/components/BudgetTracker';
 import { DependencyGraph } from '@/components/DependencyGraph';
 import { GanttChart } from '@/components/charts/GanttChart';
 import { CriticalPath, getCriticalPathIds } from '@/components/CriticalPath';
@@ -322,12 +323,11 @@ function ProjectPageContent() {
         {/* Project Progress & Budget */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <ProjectProgress tasks={tasks} sprints={sprints} />
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
-            <BudgetProgressBar
-              used={project.tokens_used ?? 0}
-              budget={project.token_budget ?? 1000000}
-            />
-          </div>
+          <BudgetTracker
+            project={project}
+            tasks={tasks}
+            sprints={sprints}
+          />
         </div>
 
         {/* Sprint Selector */}

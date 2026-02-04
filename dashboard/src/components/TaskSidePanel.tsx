@@ -24,6 +24,64 @@ import { ShadowingSelector } from '@/components/ShadowingSelector';
 import { ReviewStatusBadge } from '@/components/ReviewStatusBadge';
 import { formatTokens } from '@/lib/agents';
 
+// Extended task type that may include estimated_hours from the DB
+interface TaskWithEstimate extends Task {
+  estimated_hours?: number | null;
+}
+
+// Blended cost per 1M tokens (sonnet default)
+const DEFAULT_BLENDED_COST_PER_1M = 9;
+
+function estimateTokensFromHours(hours: number): number {
+  // Rough heuristic: 1 hour of agent work ~ 200K tokens
+  return Math.round(hours * 200_000);
+}
+
+function formatCostInline(tokens: number): string {
+  const cost = (tokens / 1_000_000) * DEFAULT_BLENDED_COST_PER_1M;
+  if (cost < 0.01) return '<$0.01';
+  if (cost < 1) return `$${cost.toFixed(2)}`;
+  return `$${cost.toFixed(2)}`;
+}
+
+function TokenUsageDisplay({ tokens, estimatedHours }: { tokens: number; estimatedHours?: number | null }) {
+  const estimatedTokens = estimatedHours ? estimateTokensFromHours(estimatedHours) : null;
+  const ratio = estimatedTokens ? tokens / estimatedTokens : null;
+
+  // Color coding: green (under estimate), yellow (close), red (over estimate)
+  let colorClass = 'text-zinc-700 dark:text-zinc-300';
+  if (ratio !== null) {
+    if (ratio <= 0.8) {
+      colorClass = 'text-green-600 dark:text-green-400';
+    } else if (ratio <= 1.2) {
+      colorClass = 'text-yellow-600 dark:text-yellow-400';
+    } else {
+      colorClass = 'text-red-600 dark:text-red-400';
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <p className={`text-sm font-medium tabular-nums ${colorClass}`}>
+        {formatTokens(tokens)}
+        <span className="ml-1.5 text-xs font-normal text-zinc-400">
+          (~{formatCostInline(tokens)})
+        </span>
+      </p>
+      {estimatedTokens && (
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+          Est: {formatTokens(estimatedTokens)}
+          {ratio !== null && (
+            <span className={`ml-1.5 ${colorClass}`}>
+              ({ratio <= 1 ? `${((1 - ratio) * 100).toFixed(0)}% under` : `${((ratio - 1) * 100).toFixed(0)}% over`})
+            </span>
+          )}
+        </p>
+      )}
+    </div>
+  );
+}
+
 interface TaskSidePanelProps {
   task: Task | null;
   agents: Agent[];
@@ -483,9 +541,7 @@ export function TaskSidePanel({
                     <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
                       Tokens Used
                     </h4>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                      {formatTokens(task.tokens_consumed ?? 0)}
-                    </p>
+                    <TokenUsageDisplay tokens={task.tokens_consumed ?? 0} estimatedHours={(task as TaskWithEstimate).estimated_hours} />
                   </div>
                 )}
                 </div>
