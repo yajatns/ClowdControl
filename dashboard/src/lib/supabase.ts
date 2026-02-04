@@ -76,6 +76,7 @@ export interface Agent {
   model: string;
   invocation_method: InvocationMethod | null;
   invocation_config: InvocationConfig | null;
+  discord_user_id?: string | null; // For @mentions in notifications
 }
 
 export interface Project {
