@@ -1,123 +1,112 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Task, Agent, supabase } from '@/lib/supabase';
-import { formatTokens } from '@/lib/agents';
+import { useEffect, useState } from 'react';
+import { Task, Agent, supabase, getAgents } from '@/lib/supabase';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-interface TaskWithProject extends Task {
-  project: { name: string; id: string } | null;
-  agent: Agent | null;
+interface PredictionData {
+  task_id: string;
+  task_title: string;
+  estimated_tokens: number;
+  actual_tokens: number;
+  accuracy: number;
+  agent_name: string;
+  completed_at: string;
 }
 
-interface PredictionStats {
-  totalTasks: number;
-  averageAccuracy: number;
-  totalOverEstimation: number;
-  totalUnderEstimation: number;
-  accurateCount: number;
-  overEstimatedCount: number;
-  underEstimatedCount: number;
-}
-
-function calculateAccuracy(estimated: number, actual: number): number {
-  if (estimated === 0) return 0;
-  const ratio = actual / estimated;
-  return Math.round((1 - Math.abs(1 - ratio)) * 100);
-}
-
-function formatCostInline(tokens: number): string {
-  const DEFAULT_BLENDED_COST_PER_1M = 9;
-  const cost = (tokens / 1_000_000) * DEFAULT_BLENDED_COST_PER_1M;
-  if (cost < 0.01) return '<$0.01';
-  if (cost < 1) return `$${cost.toFixed(2)}`;
-  return `$${cost.toFixed(2)}`;
+interface AgentAccuracy {
+  agent_name: string;
+  tasks_count: number;
+  avg_accuracy: number;
+  total_estimated: number;
+  total_actual: number;
 }
 
 export function PredictionDashboard() {
-  const [tasks, setTasks] = useState<TaskWithProject[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [predictionData, setPredictionData] = useState<PredictionData[]>([]);
+  const [agentAccuracies, setAgentAccuracies] = useState<AgentAccuracy[]>([]);
+  const [overallAccuracy, setOverallAccuracy] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<PredictionStats | null>(null);
+  const [agents, setAgents] = useState<Agent[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch completed tasks with predictions
-        const { data: tasksData, error: tasksError } = await supabase
+        // Fetch agents first
+        const agentsData = await getAgents();
+        setAgents(agentsData);
+
+        // Fetch tasks with both estimated and actual tokens
+        const { data: tasks, error } = await supabase
           .from('tasks')
-          .select(`
-            *,
-            project:projects!inner(name, id)
-          `)
-          .eq('status', 'done')
+          .select('*')
           .not('estimated_tokens', 'is', null)
-          .gt('estimated_tokens', 0)
           .gt('tokens_consumed', 0)
+          .eq('status', 'done')
           .order('completed_at', { ascending: false });
 
-        if (tasksError) throw tasksError;
+        if (error) throw error;
 
-        // Fetch agents for name resolution
-        const { data: agentsData, error: agentsError } = await supabase
-          .from('agents')
-          .select('*');
+        // Process prediction data
+        const predictions: PredictionData[] = tasks.map((task: Task) => {
+          const estimated = task.estimated_tokens || 0;
+          const actual = task.tokens_consumed;
+          const accuracy = estimated > 0 ? Math.max(0, 100 - Math.abs((estimated - actual) / estimated) * 100) : 0;
+          const agent = agentsData.find(a => a.id === task.assigned_to);
 
-        if (agentsError) throw agentsError;
+          return {
+            task_id: task.id,
+            task_title: task.title.length > 30 ? task.title.substring(0, 30) + '...' : task.title,
+            estimated_tokens: estimated,
+            actual_tokens: actual,
+            accuracy: Math.round(accuracy),
+            agent_name: agent ? agent.display_name : 'Unknown',
+            completed_at: task.completed_at || ''
+          };
+        });
 
-        setAgents(agentsData || []);
+        setPredictionData(predictions);
 
-        // Enrich tasks with agent data
-        const enrichedTasks: TaskWithProject[] = (tasksData || []).map(task => ({
-          ...task,
-          agent: agentsData?.find(agent => agent.id === task.assigned_to) || null
-        }));
+        // Calculate agent accuracies
+        const agentStats = new Map<string, {
+          count: number;
+          totalAccuracy: number;
+          totalEstimated: number;
+          totalActual: number;
+        }>();
 
-        setTasks(enrichedTasks);
+        predictions.forEach(pred => {
+          const existing = agentStats.get(pred.agent_name) || {
+            count: 0,
+            totalAccuracy: 0,
+            totalEstimated: 0,
+            totalActual: 0
+          };
 
-        // Calculate statistics
-        if (enrichedTasks.length > 0) {
-          const validTasks = enrichedTasks.filter(task => 
-            task.estimated_tokens && task.estimated_tokens > 0 && task.tokens_consumed > 0
-          );
+          existing.count += 1;
+          existing.totalAccuracy += pred.accuracy;
+          existing.totalEstimated += pred.estimated_tokens;
+          existing.totalActual += pred.actual_tokens;
 
-          let accurateCount = 0;
-          let overEstimatedCount = 0;
-          let underEstimatedCount = 0;
-          let totalAccuracy = 0;
-          let totalOverEstimation = 0;
-          let totalUnderEstimation = 0;
+          agentStats.set(pred.agent_name, existing);
+        });
 
-          validTasks.forEach(task => {
-            const estimated = task.estimated_tokens!;
-            const actual = task.tokens_consumed;
-            const accuracy = calculateAccuracy(estimated, actual);
-            totalAccuracy += accuracy;
+        const agentAccuracyData: AgentAccuracy[] = Array.from(agentStats.entries()).map(([name, stats]) => ({
+          agent_name: name,
+          tasks_count: stats.count,
+          avg_accuracy: Math.round(stats.totalAccuracy / stats.count),
+          total_estimated: stats.totalEstimated,
+          total_actual: stats.totalActual
+        })).sort((a, b) => b.avg_accuracy - a.avg_accuracy);
 
-            const ratio = actual / estimated;
-            if (ratio >= 0.8 && ratio <= 1.2) {
-              // Within 20% - considered accurate
-              accurateCount++;
-            } else if (ratio < 0.8) {
-              // Actual was less than estimated (over-estimated)
-              overEstimatedCount++;
-              totalOverEstimation += estimated - actual;
-            } else {
-              // Actual was more than estimated (under-estimated)
-              underEstimatedCount++;
-              totalUnderEstimation += actual - estimated;
-            }
-          });
+        setAgentAccuracies(agentAccuracyData);
 
-          setStats({
-            totalTasks: validTasks.length,
-            averageAccuracy: validTasks.length > 0 ? totalAccuracy / validTasks.length : 0,
-            totalOverEstimation,
-            totalUnderEstimation,
-            accurateCount,
-            overEstimatedCount,
-            underEstimatedCount
-          });
+        // Calculate overall accuracy
+        if (predictions.length > 0) {
+          const totalAccuracy = predictions.reduce((sum, pred) => sum + pred.accuracy, 0);
+          setOverallAccuracy(Math.round(totalAccuracy / predictions.length));
         }
+
       } catch (error) {
         console.error('Error fetching prediction data:', error);
       } finally {
@@ -147,12 +136,12 @@ export function PredictionDashboard() {
                 📊 Prediction Accuracy Dashboard
               </h1>
               <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-                Track how well our token usage estimates perform vs reality
+                Track token usage prediction accuracy vs actual consumption
               </p>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-zinc-500">
-                {stats?.totalTasks || 0} completed tasks with predictions
+                {predictionData.length} completed tasks with predictions
               </span>
             </div>
           </div>
@@ -161,220 +150,153 @@ export function PredictionDashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Overview */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.averageAccuracy.toFixed(1)}%
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Average Accuracy</div>
+        {/* Overall Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="text-2xl font-bold text-blue-600">
+              {overallAccuracy}%
             </div>
-            <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
-              <div className="text-2xl font-bold text-green-600">
-                {stats.accurateCount}
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Accurate (±20%)</div>
-            </div>
-            <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.overEstimatedCount}
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Over-estimated</div>
-              <div className="text-xs text-zinc-400 mt-1">
-                Saved ~{formatCostInline(stats.totalOverEstimation)}
-              </div>
-            </div>
-            <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.underEstimatedCount}
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Under-estimated</div>
-              <div className="text-xs text-zinc-400 mt-1">
-                Overspent ~{formatCostInline(stats.totalUnderEstimation)}
-              </div>
-            </div>
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">Overall Accuracy</div>
           </div>
-        )}
-
-        {/* Accuracy Distribution Chart */}
-        {stats && (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 border border-zinc-200 dark:border-zinc-800 mb-8">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
-              Prediction Accuracy Distribution
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-green-600 dark:text-green-400">Accurate (±20%)</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-32 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-green-500 rounded-full"
-                      style={{ width: `${(stats.accurateCount / stats.totalTasks) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-16 text-right">
-                    {stats.accurateCount} ({((stats.accurateCount / stats.totalTasks) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-orange-600 dark:text-orange-400">Over-estimated</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-32 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-orange-500 rounded-full"
-                      style={{ width: `${(stats.overEstimatedCount / stats.totalTasks) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-16 text-right">
-                    {stats.overEstimatedCount} ({((stats.overEstimatedCount / stats.totalTasks) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-red-600 dark:text-red-400">Under-estimated</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-32 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-red-500 rounded-full"
-                      style={{ width: `${(stats.underEstimatedCount / stats.totalTasks) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium w-16 text-right">
-                    {stats.underEstimatedCount} ({((stats.underEstimatedCount / stats.totalTasks) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="text-2xl font-bold text-green-600">
+              {predictionData.length}
             </div>
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">Tasks Analyzed</div>
           </div>
-        )}
-
-        {/* Tasks Table */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
-              Task Prediction Details
-            </h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="text-2xl font-bold text-purple-600">
+              {agentAccuracies.length}
+            </div>
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">Agents with Data</div>
           </div>
-          
-          {tasks.length === 0 ? (
-            <div className="p-6 text-center text-zinc-500 dark:text-zinc-400">
-              No completed tasks with token predictions found.
+          <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="text-2xl font-bold text-amber-600">
+              {predictionData.reduce((sum, p) => sum + p.actual_tokens, 0).toLocaleString()}
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-zinc-50 dark:bg-zinc-800">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Task
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Project
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Assigned To
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Estimated
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Actual
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Accuracy
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                      Cost Impact
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                  {tasks.map((task) => {
-                    const estimated = task.estimated_tokens!;
-                    const actual = task.tokens_consumed;
-                    const accuracy = calculateAccuracy(estimated, actual);
-                    const ratio = actual / estimated;
-                    const costDiff = (actual - estimated) / 1_000_000 * 9; // Cost difference in dollars
-                    
-                    // Determine color classes based on accuracy
-                    let accuracyColor = 'text-zinc-700 dark:text-zinc-300';
-                    if (ratio <= 0.8) {
-                      accuracyColor = 'text-green-600 dark:text-green-400';
-                    } else if (ratio <= 1.2) {
-                      accuracyColor = 'text-yellow-600 dark:text-yellow-400';
-                    } else {
-                      accuracyColor = 'text-red-600 dark:text-red-400';
-                    }
-
-                    return (
-                      <tr key={task.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-zinc-900 dark:text-white truncate max-w-xs" title={task.title}>
-                              {task.title}
-                            </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                              {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '-'}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-zinc-700 dark:text-zinc-300">
-                            {task.project?.name || 'Unknown'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-zinc-700 dark:text-zinc-300">
-                            {task.agent?.display_name || task.assigned_to || 'Unassigned'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="text-sm font-mono text-zinc-700 dark:text-zinc-300">
-                            {formatTokens(estimated)}
-                          </div>
-                          <div className="text-xs text-zinc-400">
-                            {formatCostInline(estimated)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="text-sm font-mono text-zinc-700 dark:text-zinc-300">
-                            {formatTokens(actual)}
-                          </div>
-                          <div className="text-xs text-zinc-400">
-                            {formatCostInline(actual)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className={`text-sm font-medium ${accuracyColor}`}>
-                            {accuracy}%
-                          </div>
-                          <div className={`text-xs ${accuracyColor}`}>
-                            {ratio <= 0.8 
-                              ? `${((1 - ratio) * 100).toFixed(0)}% under` 
-                              : ratio >= 1.2 
-                              ? `${((ratio - 1) * 100).toFixed(0)}% over`
-                              : 'within range'
-                            }
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className={`text-sm font-medium ${costDiff > 0 ? 'text-red-600 dark:text-red-400' : costDiff < 0 ? 'text-green-600 dark:text-green-400' : 'text-zinc-500'}`}>
-                            {costDiff > 0 ? '+' : ''}{costDiff < 0.01 && costDiff > -0.01 ? '$0.00' : `$${costDiff.toFixed(2)}`}
-                          </div>
-                          <div className="text-xs text-zinc-400">
-                            {costDiff > 0 ? 'overspent' : costDiff < 0 ? 'saved' : 'exact'}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">Total Tokens Used</div>
+          </div>
         </div>
+
+        {predictionData.length === 0 ? (
+          <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="text-zinc-500 dark:text-zinc-400">No prediction data available yet.</div>
+            <div className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+              Complete some tasks with estimated token usage to see accuracy metrics.
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Predictions vs Actuals Chart */}
+            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+                Token Usage: Predicted vs Actual (Last 20 Tasks)
+              </h2>
+              <div style={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer>
+                  <BarChart data={predictionData.slice(0, 20)}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis 
+                      dataKey="task_title" 
+                      tick={{ fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="estimated_tokens" fill="#3b82f6" name="Estimated Tokens" />
+                    <Bar dataKey="actual_tokens" fill="#10b981" name="Actual Tokens" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Accuracy Trend */}
+            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+                Prediction Accuracy Trend
+              </h2>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <LineChart data={predictionData.slice(0, 20)}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis 
+                      dataKey="task_title" 
+                      tick={{ fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value) => [`${value}%`, 'Accuracy']}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="accuracy" 
+                      stroke="#f59e0b" 
+                      strokeWidth={3}
+                      dot={{ fill: '#f59e0b', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Agent Breakdown */}
+            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+                Agent Prediction Accuracy
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {agentAccuracies.map((agent) => (
+                  <div
+                    key={agent.agent_name}
+                    className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-zinc-900 dark:text-white">
+                        {agent.agent_name}
+                      </h3>
+                      <span 
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          agent.avg_accuracy >= 80 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                            : agent.avg_accuracy >= 60
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                        }`}
+                      >
+                        {agent.avg_accuracy}%
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      <div>Tasks: {agent.tasks_count}</div>
+                      <div>Est: {agent.total_estimated.toLocaleString()}</div>
+                      <div>Actual: {agent.total_actual.toLocaleString()}</div>
+                      <div>
+                        Diff: {agent.total_estimated > agent.total_actual ? '+' : ''}{(agent.total_estimated - agent.total_actual).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
