@@ -245,14 +245,19 @@ export interface AgentSession {
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Returns the correct client for the current context:
 // - Browser: SSR-aware client with auth cookies (RLS sees auth.uid())
-// - Server (API routes): bare client (no session, used with service role or anon key)
+// - Server (API routes): service role client (bypasses RLS for backend operations)
 // createBrowserClient is a singleton — safe to call repeatedly.
 function getClient(): SupabaseClient {
   if (typeof window !== 'undefined') {
     return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  }
+  // Server-side: use service role key if available (bypasses RLS for API routes)
+  if (supabaseServiceKey) {
+    return createClient(supabaseUrl, supabaseServiceKey);
   }
   return createClient(supabaseUrl, supabaseAnonKey);
 }
