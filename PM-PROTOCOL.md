@@ -1,7 +1,7 @@
 # PM Protocol — Mission Control Agent Dispatch
 
-**Version:** 1.0  
-**Date:** February 2, 2026  
+**Version:** 1.1  
+**Date:** February 3, 2026  
 **Applies to:** Any PM agent (Chhotu, Cheenu, or future PMs)
 
 ---
@@ -281,6 +281,79 @@ When execution mode changes:
 
 ---
 
+## Sprint Closing Protocol (Mandatory)
+
+A sprint is **NOT complete** until both closing gates pass. These are mandatory — no exceptions.
+
+### Gate 1: QA Evaluation Run
+
+**Who:** QA agent (worker-qa or antman)
+**When:** After all non-QA tasks are marked `done`
+**What:** Run the full evaluation test suite against the sprint's deliverables
+
+The PM must:
+1. Create a QA closing task (if one doesn't already exist in the sprint):
+   - **Title:** `[QA GATE] Sprint {N} — Evaluation Test Run`
+   - **Type:** `testing`
+   - **Priority:** P1
+   - **Description:** Run all evaluation tests. Verify every completed task's acceptance criteria. Report pass/fail with evidence.
+2. Dispatch to QA agent using standard dispatch protocol (Steps 3-7)
+3. If QA finds bugs → create follow-up bug tasks in the **next sprint's backlog**, mark current sprint QA as `done` with notes
+4. If QA passes clean → mark QA gate as ✅
+
+### Gate 2: PM Review & Verification
+
+**Who:** PM (Chhotu, Cheenu, or whoever is running the sprint)
+**When:** After QA gate passes (or in parallel if PM wants early visibility)
+**What:** PM personally reviews each completed task against its spec
+
+The PM must:
+1. For **every task** in the sprint marked `done`:
+   - Pull the original task spec from `tasks/TASK-*.md` or Supabase
+   - Check each acceptance criterion — was it actually implemented?
+   - Verify the work matches the intent, not just the letter
+   - Grade: ✅ Pass, ⚠️ Partial, ❌ Miss
+2. For any ⚠️ Partial or ❌ Miss:
+   - Create a follow-up task in the **next sprint's backlog** with clear description of what's missing
+   - Reference the original task ID
+   - Tag with `follow-up` and original sprint number
+3. Write a **Sprint Closing Report** to `docs/sprint-{N}-closing.md`:
+   ```markdown
+   # Sprint {N} Closing Report
+   
+   ## Summary
+   - Tasks completed: X/Y
+   - QA result: {pass/fail with bug count}
+   - PM review: {X pass, Y partial, Z miss}
+   
+   ## Task Reviews
+   | Task | Title | QA | PM Review | Notes |
+   |------|-------|----|-----------|-------|
+   | {id} | {title} | ✅/❌ | ✅/⚠️/❌ | {notes} |
+   
+   ## Follow-Up Tasks Created
+   - {task title} → Sprint {N+1} backlog ({reason})
+   
+   ## Lessons Learned
+   - {What worked well}
+   - {What didn't — and why}
+   - {Process improvements for next sprint}
+   ```
+4. Post the closing summary to `#disclawd-mission-control`
+
+### Self-Learning Rule
+
+The PM Review is a **learning mechanism**. Over time, the PM builds pattern recognition:
+
+- **Track recurring gaps** — If agents keep missing the same type of acceptance criteria, update the task template to be more explicit about that pattern
+- **Refine agent instructions** — If worker-dev consistently misses edge cases, add "edge case checklist" to dev task templates
+- **Update PM-PROTOCOL.md** — When a new anti-pattern or best practice emerges from reviews, add it to this doc
+- **Log lessons in closing report** — Every sprint closing report has a "Lessons Learned" section that feeds forward
+
+> **Sprint Victory Condition:** Both gates pass. QA evaluation ✅ AND PM review complete (all tasks graded, follow-ups created for gaps). Only then does the PM announce sprint completion.
+
+---
+
 ## Anti-Patterns (Don't Do This)
 
 | ❌ Wrong | ✅ Right |
@@ -292,6 +365,9 @@ When execution mode changes:
 | PM announces spawn without actual tool call | PM calls tool first, confirms with real session ID |
 | PM says "I'll check on them shortly" with no mechanism | PM creates a monitoring cron before confirming dispatch |
 | PM manually remembers to check agents | Monitoring cron auto-fires every 5 min until done |
+| PM declares sprint done when all tasks finish | PM runs both closing gates (QA eval + PM review) first |
+| PM skips review for "obvious" tasks | PM reviews every task — no exceptions |
+| PM finds a gap but doesn't create follow-up | PM creates follow-up task in next sprint backlog |
 
 ---
 
