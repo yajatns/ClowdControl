@@ -160,13 +160,27 @@ sessions_spawn(
 
 1. Pre-trust the project in `~/.claude.json`
 2. Write task to `TASK.md` in project root
-3. Spawn via coding-agent skill:
+3. **Assess complexity and pick mastery agent:**
+
+| Complexity | Domain | Agent Flag |
+|------------|--------|------------|
+| Low (< 50 LOC, simple fix) | Any | `--agent junior-dev` |
+| Medium, frontend-heavy | UI/React/CSS | `--agent frontend-dev` |
+| Medium, backend-heavy | API/DB/auth | `--agent backend-dev` |
+| High (> 200 LOC, architecture) | Any | `--agent senior-dev` |
+| Multi-component breakdown | Any | `--agent project-manager` |
+
+4. Spawn with the selected mastery agent:
 
 ```bash
 cd {project_path}
-claude --allowedTools "Bash(*)" "Edit(*)" "Write(*)" "Read(*)" "Fetch(*)" \
+claude --agent {mastery-agent} -p --allowedTools "Bash(*)" "Edit(*)" "Write(*)" "Read(*)" "Fetch(*)" \
   "Follow TASK.md and complete the task. Commit your changes when done."
 ```
+
+> **⚠️ MANDATORY:** Every `claude_code` dispatch MUST include `--agent {mastery-agent}`. Never spawn vanilla Claude Code without an agent flag. The mastery agents are installed at `~/.claude/agents/` and provide specialized expertise that significantly improves output quality.
+>
+> **Available agents:** `senior-dev`, `junior-dev`, `frontend-dev`, `backend-dev`, `project-manager`, `ai-engineer`, `ml-engineer`, `data-scientist`, `data-engineer`, `product-manager`
 
 #### `custom` (future extensibility)
 

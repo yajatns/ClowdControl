@@ -131,13 +131,21 @@ sessions_spawn(
 
 1. Pre-trust the project in `~/.claude.json`
 2. Write task to `TASK.md` in project root
-3. Spawn via Claude Code CLI:
+3. **Pick mastery agent based on complexity:**
+   - Low (< 50 LOC) → `--agent junior-dev`
+   - Medium, frontend → `--agent frontend-dev`
+   - Medium, backend → `--agent backend-dev`
+   - High (> 200 LOC) → `--agent senior-dev`
+   - Multi-component → `--agent project-manager`
+4. Spawn with the selected agent:
 
 ```bash
 cd {project_path}
-claude --allowedTools "Bash(*)" "Edit(*)" "Write(*)" "Read(*)" "Fetch(*)" \
+claude --agent {mastery-agent} -p --allowedTools "Bash(*)" "Edit(*)" "Write(*)" "Read(*)" "Fetch(*)" \
   "Follow TASK.md and complete the task. Commit your changes when done."
 ```
+
+> **MANDATORY:** Always include `--agent` flag. Available: `senior-dev`, `junior-dev`, `frontend-dev`, `backend-dev`, `project-manager`, `ai-engineer`, `ml-engineer`, `data-scientist`, `data-engineer`, `product-manager`
 
 #### `custom` (extensible)
 
