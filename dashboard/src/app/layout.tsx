@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CommandPalette } from "@/components/CommandPalette";
 import { BugReportButton } from "@/components/BugReportButton";
+import { config } from "@/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mission Control",
-  description: "Multi-agent project coordination and management platform",
+  title: config.productName,
+  description: config.productDescription,
 };
 
 export default function RootLayout({

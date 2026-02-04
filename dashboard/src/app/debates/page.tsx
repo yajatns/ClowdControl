@@ -76,7 +76,7 @@ export default function DebatesPage() {
               className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 flex items-center gap-1"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Mission Control
+              Back to Clowd-Control
             </Link>
             <button
               onClick={toggleTheme}

@@ -38,7 +38,7 @@ export function NotificationSetupBanner({ projectId }: NotificationSetupBannerPr
           <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
           <div>
             <p className="font-medium text-blue-900 dark:text-blue-200 text-sm">
-              Set up PM notifications to get the most out of Mission Control
+              Set up PM notifications to get the most out of Clowd-Control
             </p>
             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
               Create a Discord webhook in your channel &rarr; open <strong>Settings &rarr; Notifications</strong> &rarr; paste the URL &rarr; click <strong>Test</strong>.

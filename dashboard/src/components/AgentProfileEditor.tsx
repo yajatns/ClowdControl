@@ -101,7 +101,7 @@ export function AgentProfileEditor({ agent, isOpen, onClose }: AgentProfileEdito
               Edit Agent Profile: {agent.display_name}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {agent.mcu_codename} • {agent.role}
+              {agent.display_name} • {agent.role}
             </p>
           </div>
           <button

@@ -49,7 +49,7 @@ Each agent has:
 ```json
 {
   "id": "worker-dev",
-  "display_name": "Friday",
+  "display_name": "Developer",
   "role": "Developer",
   "capabilities": ["coding", "debugging", "architecture"],
   "invocation_method": "claude_code",

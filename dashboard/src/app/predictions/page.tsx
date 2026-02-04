@@ -5,6 +5,6 @@ export default function PredictionsPage() {
 }
 
 export const metadata = {
-  title: 'Prediction Accuracy Dashboard | Mission Control',
+  title: 'Prediction Accuracy Dashboard | Clowd-Control',
   description: 'Track token usage prediction accuracy vs actual consumption',
 };

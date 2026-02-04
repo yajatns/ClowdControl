@@ -168,7 +168,7 @@ When filing API bugs as Mission Control tasks:
 ```
 
 ## Notes
-- worker-qa complements Ant-Man (UI) with API-level testing
+- worker-qa complements worker-ui-qa (UI) with API-level testing
 - Best for REST API validation, not GraphQL (yet)
 - Can validate against OpenAPI specs if provided
 - Should run after worker-dev completes API changes

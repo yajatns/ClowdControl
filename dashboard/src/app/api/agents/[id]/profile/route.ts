@@ -9,8 +9,8 @@ const AGENTS_DIR = path.join(process.cwd(), '..', 'agents');
 // IDs must match Supabase agents table
 const AGENT_PROFILE_MAP: Record<string, string> = {
   // PMs
-  'chhotu': 'jarvis-pm.md',
-  'cheenu': 'jarvis-pm.md', // Cheenu uses same PM profile template for now
+  'chhotu': 'pm-orchestrator.md',
+  'cheenu': 'pm-orchestrator.md', // Cheenu uses same PM profile template for now
   
   // Specialists (IDs from Supabase)
   'worker-dev': 'worker-dev.md',

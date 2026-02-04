@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     const realProjects = [
       {
-        name: 'Mission Control',
+        name: 'Clowd-Control',
         description: 'Multi-agent project coordination system with anti-groupthink mechanisms',
         status: 'active',
         owner_type: 'human',
@@ -202,7 +202,7 @@ export async function GET() {
     }
 
     // Check existing real projects
-    const realProjectNames = ['Mission Control', 'DpuDebugAgent', 'FPL Analytics'];
+    const realProjectNames = ['Clowd-Control', 'DpuDebugAgent', 'FPL Analytics'];
     const { data: existingRealProjects } = await supabase
       .from('projects')
       .select('id, name, status')

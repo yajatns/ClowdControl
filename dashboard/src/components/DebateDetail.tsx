@@ -79,7 +79,7 @@ export function DebateDetail({
   const getAgentCodename = (id: string | null) => {
     if (!id) return '';
     const agent = agents.find((a) => a.id === id);
-    return agent?.mcu_codename || '';
+    return agent?.display_name || '';
   };
 
   const formatDate = (dateString: string | null) => {

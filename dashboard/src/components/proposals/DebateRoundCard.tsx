@@ -102,9 +102,9 @@ export function DebateRoundCard({
                     <p className="font-medium text-white">
                       {agent?.display_name || 'Unknown Agent'}
                     </p>
-                    {agent?.mcu_codename && (
+                    {agent?.display_name && (
                       <p className="text-xs text-zinc-500 font-mono uppercase">
-                        {agent.mcu_codename}
+                        {agent.display_name}
                       </p>
                     )}
                   </div>

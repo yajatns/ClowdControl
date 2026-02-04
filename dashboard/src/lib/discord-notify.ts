@@ -71,7 +71,7 @@ export async function testNotification(webhookUrl: string, projectName: string):
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        content: `✅ **Mission Control** — Webhook test successful! Notifications are working for project: ${projectName}`
+        content: `✅ **Clowd-Control** — Webhook test successful! Notifications are working for project: ${projectName}`
       })
     });
 

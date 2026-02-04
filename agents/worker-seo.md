@@ -46,7 +46,7 @@ Predefined sequences for common tasks:
 4. `web_fetch` competitor pages for comparison
 5. Analyze technical issues (meta tags, structure, speed indicators)
 6. Generate prioritized recommendations report
-**Outputs:** SEO Audit Report (markdown + PDF via Wong)
+**Outputs:** SEO Audit Report (markdown + PDF via worker-research)
 
 ### keyword-research
 **Trigger:** New content planning or topic expansion

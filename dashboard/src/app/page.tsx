@@ -58,13 +58,13 @@ export default function Dashboard() {
   const getAgentName = (id: string | null) => {
     if (!id) return 'Unassigned';
     const agent = agents.find((a) => a.id === id);
-    return agent ? `${agent.display_name} (${agent.mcu_codename})` : id;
+    return agent ? agent.display_name : id;
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="text-xl text-zinc-600 dark:text-zinc-400">Loading Mission Control...</div>
+        <div className="text-xl text-zinc-600 dark:text-zinc-400">Loading Clowd-Control...</div>
       </div>
     );
   }
@@ -77,7 +77,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
-                🚀 Mission Control
+                🚀 Clowd-Control
               </h1>
               <p className="text-zinc-600 dark:text-zinc-400 mt-1">
                 Multi-agent project coordination
@@ -257,7 +257,7 @@ export default function Dashboard() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-zinc-900 dark:text-white">
-                          {agent.mcu_codename}
+                          {agent.display_name}
                         </span>
                         <SkillLevelBadge level={agent.skill_level} size="sm" />
                       </div>

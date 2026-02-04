@@ -196,7 +196,7 @@ export default function SubmitOpinionPage() {
                 const hasOpinion = existingOpinions.some((o) => o.agent_id === agent.id);
                 return (
                   <option key={agent.id} value={agent.id} disabled={hasOpinion}>
-                    {agent.display_name} {agent.mcu_codename ? `(${agent.mcu_codename})` : ''}{' '}
+                    {agent.display_name} {agent.display_name ? `(${agent.display_name})` : ''}{' '}
                     {hasOpinion ? '✓ Submitted' : ''}
                   </option>
                 );

@@ -632,7 +632,7 @@ function ProjectApprovalCard({
                 {selectedPm === agent.id && '✓ '}{agent.display_name}
               </div>
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                @{agent.id} • {agent.mcu_codename}
+                @{agent.id} • {agent.display_name}
               </div>
             </button>
           ))}

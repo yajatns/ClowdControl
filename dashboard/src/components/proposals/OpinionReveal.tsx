@@ -147,9 +147,9 @@ export function OpinionReveal({ opinions, agents }: OpinionRevealProps) {
                   <h4 className="font-semibold text-white">
                     {agent?.display_name || 'Unknown Agent'}
                   </h4>
-                  {agent?.mcu_codename && (
+                  {agent?.display_name && (
                     <p className="text-xs text-zinc-500 font-mono uppercase">
-                      {agent.mcu_codename}
+                      {agent.display_name}
                     </p>
                   )}
                 </div>
