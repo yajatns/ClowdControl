@@ -433,7 +433,7 @@ export function TaskSidePanel({
           </div>
         </SheetHeader>
 
-        <div className="px-4 pb-4 space-y-6">
+        <div className="pl-4 pr-12 pb-4 space-y-6">
           {/* View Mode */}
           {!editMode && (
             <>

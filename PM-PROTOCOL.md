@@ -219,6 +219,8 @@ Each mode has a specific PM behavior. These are **mandatory** — not suggestion
   4. Only stops on: blocker, budget limit, or no more backlog tasks
   5. When sprint is complete → post summary to #disclawd-mission-control, disable cron
 
+> **⚠️ Zombie Detection (Mandatory):** Every monitoring cron run MUST query ALL `in_progress` tasks from Supabase. If a task has been `in_progress` for >30 min with no known active worker session, reset it to `backlog`. This catches workers that died silently.
+
 > **⚠️ QA Gate Rule (Mandatory):** Tasks with `task_type: "testing"` or `task_type: "qa"` are ALWAYS dispatched LAST in a sprint. The PM must hold QA tasks in backlog until all other non-QA backlog tasks are done or in-progress. This ensures QA validates the final state of the sprint, not intermediate work. If a QA task is the only backlog item remaining, dispatch it.
 
 #### Background Mode
