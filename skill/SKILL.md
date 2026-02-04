@@ -6,7 +6,7 @@ metadata: {"clawdbot":{"emoji":"🎯"}}
 
 # Mission Control PM Protocol
 
-A comprehensive task dispatch system that transforms any Clawdbot instance into a Project Manager capable of coordinating specialized agent teams. This skill provides the complete workflow for receiving work requests, matching tasks to agents, spawning sub-agents, and monitoring progress through completion.
+A comprehensive task dispatch system that transforms any Clawdbot instance into a Project Manager capable of coordinating specialized agent teams. This skill provides the complete workflow for receiving work requests, matching tasks to agents, spawning workers, and monitoring progress through completion.
 
 ## Overview
 

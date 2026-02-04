@@ -13,7 +13,7 @@
 - [x] Committed: `ab9479c`
 
 ### Phase 7B: PM Heartbeat & Cron ✅ COMPLETE
-Sub-agent: `phase7b-cron-builder` — completed
+Worker: `phase7b-cron-builder` — completed
 
 Built:
 - [x] `lib/scheduler.ts` - Task scheduling logic (4.7KB)
@@ -23,7 +23,7 @@ Built:
 - [x] All tests passing
 
 ### Phase 7C: Multi-Agent Spawning ✅ COMPLETE
-Sub-agent: `phase7c-spawner-builder` — completed 12:34 PM
+Worker: `phase7c-spawner-builder` — completed 12:34 PM
 
 Built:
 - [x] `lib/prompts.ts` - Agent personas & task prompts (5.3KB)
@@ -91,7 +91,7 @@ Built:
 - Minor: `sprint.acceptance_criteria` renders as `[object Object]` in prompts - pre-existing, not blocking
 
 ## Phase 8: Dashboard Polish ✅ COMPLETE (12:34 PM)
-Sub-agent: `phase8-dashboard-polish` — completed
+Worker: `phase8-dashboard-polish` — completed
 
 Built:
 - [x] `ActivityFeed.tsx` - Real-time activity stream

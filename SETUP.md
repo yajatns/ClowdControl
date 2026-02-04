@@ -346,7 +346,7 @@ json.dump(config, open(os.path.expanduser('~/.claude.json'), 'w'), indent=2)
 ┌─────────────────┐           │             ┌──────────────┐
 │    Discord       │           │             │   Workers    │
 │  #mission-ctrl   │           │             │ (Claude Code,│
-└─────────────────┘           │             │  sub-agents) │
+└─────────────────┘           │             │  task exec) │
                                │             └──────────────┘
                                │
                     ┌──────────┴──────────┐
@@ -355,7 +355,7 @@ json.dump(config, open(os.path.expanduser('~/.claude.json'), 'w'), indent=2)
                     └─────────────────────┘
 ```
 
-**Key concept:** Multiple Clawdbots share the same Supabase. Each has their own agent profile. The PM dispatches tasks to workers (specialist sub-agents) that execute and report back.
+**Key concept:** Multiple Clawdbots share the same Supabase. Each has their own agent profile. The PM dispatches tasks to workers (specialist task executors) that execute and report back.
 
 ---
 

@@ -76,7 +76,7 @@ Each agent is optimized for their domain:
 Multiple agents work simultaneously:
 - Research and development can happen in parallel
 - PM agents coordinate without blocking
-- 8 concurrent sub-agents supported
+- 8 concurrent workers supported
 
 ### ✅ **Anti-Groupthink by Design**
 Built-in protocols prevent AI echo chambers:

@@ -184,7 +184,7 @@ Agent runs on configured model (sonnet/opus/etc)
 |---|------|----------|--------|
 | 32 | **Clawdbot → Supabase Client** — Read/write from bots | P1 | 🔲 Todo |
 | 33 | **PM Heartbeat Cron** — 30-min project check-ins | P1 | 🔲 Todo |
-| 34 | **Sub-Agent Spawning with Model** — Pass model from agent config | P1 | 🔲 Todo |
+| 34 | **Worker Spawning with Model** — Pass model from agent config | P1 | 🔲 Todo |
 | 35 | **Activity Logging** — Auto-log all agent actions | P1 | 🔲 Todo |
 | 36 | **Discord Notifications** — Key events to channel | P2 | 🔲 Todo |
 | 37 | **Escalation Flow** — Junior stuck → escalate to senior | P2 | 🔲 Todo |
