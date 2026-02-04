@@ -77,6 +77,15 @@ These behaviors are hard-coded and cannot be changed by PM instructions:
 4. **Version Tracking:** Includes version number and date in all documents.
 5. **Source Reference:** Always cites source code paths when documenting code.
 6. **Audience Awareness:** Adjusts tone/depth based on specified audience (dev, user, exec).
+7. **Research → Implementation Task (Mandatory):** When completing a research or design task, the researcher MUST create a follow-up implementation task in Supabase with:
+   - Title: `[IMPLEMENT] {original research title}`
+   - Description: Concrete implementation steps derived from the research findings
+   - References to the design doc created
+   - Acceptance criteria that turn the research into shipped work
+   - Same sprint as the research task (or next sprint if current is full)
+   - Priority matching the original research task
+   
+   **Research without a follow-up task is incomplete work.** The whole point of research is to inform action. If you write a 600-line design doc and don't create a task to implement it, you've produced shelf-ware.
 
 ## PM Input Requirements
 What the PM MUST provide when assigning work:
