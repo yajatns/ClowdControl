@@ -1,69 +1,61 @@
-# TASK: Replace Avengers naming convention with new worker identities
+# Task: Wire claude-code-mastery agents into worker-dev dispatch
 
-**Task ID:** ab711588-3d1a-4ce8-a82c-8635cc015194
-**Sprint:** 10
-**Priority:** 1
+## Task ID
+`d7ec9302-702a-4cf3-aedf-12c839aa80fc`
 
 ## Objective
-Replace all Avengers-themed worker names (wong, friday-dev, hawkeye, wanda) with generic, professional worker identities throughout the codebase, documentation, and configuration.
+Implement the mastery agent integration designed in `docs/MASTERY-INTEGRATION.md`. This wires claude-code-mastery sub-agents (senior-dev, junior-dev, frontend-dev, etc.) into Mission Control's worker dispatch system.
 
-## New Worker Names
-Replace the old Avengers names with descriptive role-based identities:
-- `friday-dev` → `worker-dev` (primary developer worker)
-- `wong` → `worker-research` (research & analysis worker)
-- `hawkeye` → `worker-qa` (QA & testing worker)
-- `wanda` → `worker-design` (design & creative worker)
-- `chhotu` stays as-is (PM/orchestrator — not an Avenger name)
-- `cheenu` stays as-is (infrastructure — not an Avenger name)
+## What to Implement
 
-## Scope
+### 1. Update worker-dev.md agent profile
+- Edit `agents/worker-dev.md` to include mastery agent delegation instructions
+- Add complexity analysis framework: low → junior-dev, high → senior-dev, frontend → frontend-dev, etc.
+- Include delegation strategy and available mastery agents list
 
-### 1. Source Code (dashboard/src/)
-- Search all `.ts` and `.tsx` files for old names
-- Replace in UI components, API routes, type definitions
-- Check for hardcoded agent profile references
+### 2. Update PM-PROTOCOL.md with mastery integration
+- Add a "Claude Code Mastery Integration" section to `PM-PROTOCOL.md`
+- Document the two-tier delegation pattern: PM → Claude Code → Mastery Agent
+- Add delegation hints for task dispatch
 
-### 2. Documentation (docs/)
-- Update all `.md` files with new naming
-- Update any planning or protocol documents
+### 3. Create enhanced task template
+- Create `agents/TASK-MASTERY-TEMPLATE.md` with:
+  - Complexity analysis section
+  - Domain categorization (frontend/backend/fullstack/architecture)
+  - Suggested mastery agent field
+  - Delegation instructions block
 
-### 3. Configuration
-- Check `package.json`, config files for old names
-- Update any agent profile configs
+### 4. Verify mastery agents are installed
+- Check `~/.claude/agents/` directory exists and has agents
+- If missing, run the install script from claude-code-mastery skill
+- List available agents in the profile
 
-### 4. Supabase Data
-Update `assigned_to` column in tasks table:
-```
-Supabase URL: https://emsivxzsrkovjrrpquki.supabase.co/rest/v1
-API Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtc2l2eHpzcmtvdmpycnBxdWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NzUzNDAsImV4cCI6MjA4NTU1MTM0MH0.jogq1dXEvF1S5fjRxvFfNnkO1eLbeHPBpvzVWJGG5IQ
-```
+### 5. Update skill/SKILL.md dispatch logic
+- When dispatching to worker-dev, include mastery delegation hints in task file
+- Add complexity-based agent selection rules
+- Document fallback: if delegation fails, worker-dev handles directly
 
-Run PATCH requests to update assigned_to for all tasks with old names:
-- `friday-dev` → `worker-dev`
-- `wong` → `worker-research`
-- `hawkeye` → `worker-qa`
-- `wanda` → `worker-design`
+## Reference
+- Design doc: `docs/MASTERY-INTEGRATION.md` (read this first!)
+- Current PM protocol: `PM-PROTOCOL.md`
+- Current worker profile: `agents/worker-dev.md`
+- Mastery skill: `/Users/yajat/workspace/skills/claude-code-mastery/SKILL.md`
 
-### 5. Git
-- Commit all changes with message: "chore: replace Avengers naming with role-based worker identities"
+## Project Location
+`/Users/yajat/workspace/projects/mission-control`
 
-## Deliverables
-1. All source files updated
-2. All docs updated
-3. Supabase data migrated
-4. Build passes (`npm run build` in dashboard/)
-5. Git commit with changes
-6. Mark this task as done in Supabase:
-```bash
-curl -X PATCH "https://emsivxzsrkovjrrpquki.supabase.co/rest/v1/tasks?id=eq.ab711588-3d1a-4ce8-a82c-8635cc015194" \
-  -H "apikey: <KEY>" \
-  -H "Authorization: Bearer <KEY>" \
-  -H "Content-Type: application/json" \
-  -H "Prefer: return=minimal" \
-  -d '{"status":"done","updated_at":"now()"}'
-```
+## Acceptance Criteria
+- [ ] worker-dev.md updated with mastery delegation framework
+- [ ] PM-PROTOCOL.md has mastery integration section
+- [ ] TASK-MASTERY-TEMPLATE.md created
+- [ ] Mastery agents verified installed in ~/.claude/agents/
+- [ ] skill/SKILL.md updated with mastery dispatch logic
+- [ ] Build passes (if applicable)
+- [ ] Changes committed to git
+- [ ] Task marked done in Supabase
 
-## Notes
-- Do NOT rename chhotu or cheenu — those are not Avengers names
-- Keep the rename mapping consistent everywhere
-- If any agent_profiles table or similar exists in Supabase, update those too
+## Supabase Details
+- **URL:** https://emsivxzsrkovjrrpquki.supabase.co/rest/v1
+- **Key:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtc2l2eHpzcmtvdmpycnBxdWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NzUzNDAsImV4cCI6MjA4NTU1MTM0MH0.jogq1dXEvF1S5fjRxvFfNnkO1eLbeHPBpvzVWJGG5IQ
+- **Task ID:** d7ec9302-702a-4cf3-aedf-12c839aa80fc
+- Mark done with: `PATCH /rest/v1/tasks?id=eq.d7ec9302-702a-4cf3-aedf-12c839aa80fc` body: `{"status": "done"}`

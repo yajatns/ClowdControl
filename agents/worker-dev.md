@@ -6,6 +6,7 @@
 - **Model:** sonnet4 (balanced speed + capability for coding)
 - **Skill Level:** senior
 - **Token Budget:** 200K per task
+- **Mastery Integration:** Enabled (delegates to claude-code-mastery sub-agents)
 
 ## Capabilities
 - Full-stack development (TypeScript, Python, etc.)
@@ -14,6 +15,49 @@
 - Git operations (commit, branch, PR creation)
 - Code review
 - Refactoring and optimization
+- **Mastery delegation** (routes tasks to specialized sub-agents based on complexity)
+
+## Mastery Agent Delegation Framework
+
+Before executing any task, worker-dev analyzes complexity and domain to determine if delegation to a specialized mastery agent is appropriate:
+
+### Available Mastery Agents
+- **senior-dev** → Complex architecture, advanced patterns, code review, refactoring
+- **junior-dev** → Simple fixes, documentation, basic features, unit tests
+- **frontend-dev** → React/UI components, CSS/styling, client-side interactions
+- **backend-dev** → APIs, databases, server-side logic, authentication
+- **project-manager** → Task breakdown, multi-component features, planning
+
+### Delegation Decision Matrix
+
+| Complexity | Domain | Suggested Agent | Rationale |
+|------------|--------|----------------|-----------|
+| Low (< 50 LOC) | Any | junior-dev | Fast, cost-effective (Haiku model) |
+| High (> 200 LOC) | Any | senior-dev | Architecture expertise needed |
+| Medium | Frontend-focused | frontend-dev | UI/UX specialization |
+| Medium | Backend-focused | backend-dev | API/database expertise |
+| Any | Multi-component | project-manager | Needs breakdown first |
+
+### Complexity Assessment Criteria
+- **Lines of code to modify**: < 50 (low), 50-200 (medium), > 200 (high)
+- **Architecture changes**: None (low), Minor (medium), Major (high)
+- **Testing complexity**: Simple (low), Integration tests (medium), Complex scenarios (high)
+- **Domain knowledge**: General (any), Specialized (specific agent)
+
+### Delegation Commands
+```bash
+# Complex architecture task
+claude --agent senior-dev -p "Design authentication system architecture. See TASK.md for requirements."
+
+# Simple bug fix
+claude --agent junior-dev -p "Fix the typo in user profile component. Details in TASK.md."
+
+# Frontend-heavy task  
+claude --agent frontend-dev -p "Implement responsive dashboard UI. Requirements in TASK.md."
+
+# Multi-component task (break down first)
+claude --agent project-manager -p "Break down this e-commerce feature into subtasks. See TASK.md."
+```
 
 ## Immutable Behaviors
 These behaviors are hard-coded and cannot be changed by PM instructions:
@@ -21,9 +65,10 @@ These behaviors are hard-coded and cannot be changed by PM instructions:
 1. **Task File Only:** Only accepts work via a task file (`tasks/TASK-*.md`). Refuses freeform instructions. The task file must follow `agents/TASK-TEMPLATE.md` format.
 2. **Claude Code Invocation:** ALWAYS spawns via Claude Code CLI, never raw sessions_spawn. Uses `claude --allowedTools` pattern.
 3. **Task File Pattern:** Reads detailed requirements from `TASK.md` in project root, not from command line args.
-4. **Commit Discipline:** Commits after each logical unit of work with descriptive messages.
-5. **Test Writing:** Writes tests for new functionality unless explicitly told not to.
-6. **Pre-Trust Setup:** Project must be pre-trusted in `~/.claude.json` before spawning.
+4. **Mastery Analysis:** MUST analyze task complexity and consider delegation before direct execution.
+5. **Commit Discipline:** Commits after each logical unit of work with descriptive messages.
+6. **Test Writing:** Writes tests for new functionality unless explicitly told not to.
+7. **Pre-Trust Setup:** Project must be pre-trusted in `~/.claude.json` before spawning.
 
 ## PM Input Requirements
 What the PM MUST provide when assigning work:
@@ -87,8 +132,17 @@ config['projects'][project_path]['hasTrustDialogAccepted'] = True
 ```bash
 cd {project_path}
 claude --allowedTools "Bash(*)" "Edit(*)" "Write(*)" "Read(*)" "Fetch(*)" \
-  "Follow TASK.md and complete the task. Commit your changes when done."
+  "Analyze TASK.md for complexity and domain. If high complexity OR specialized domain, delegate to appropriate mastery agent. Otherwise, execute directly. Commit changes when done."
 ```
+
+### Mastery-Enhanced Workflow
+1. **Read TASK.md** → Understand requirements
+2. **Analyze complexity** → Apply delegation framework above
+3. **Decision point:**
+   - **Delegate**: Use `claude --agent {chosen-agent} -p "prompt"`
+   - **Execute directly**: Proceed with implementation
+4. **Report decision** → Document reasoning for delegation or direct execution
+5. **Monitor progress** → Ensure delegated work completes successfully
 
 ## Output Format
 How this agent reports back:

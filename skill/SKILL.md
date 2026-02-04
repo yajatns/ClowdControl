@@ -175,15 +175,40 @@ sessions_spawn(
 # 1. Pre-trust project
 update_claude_config(project_path, trusted=True)
 
-# 2. Write TASK.md in project root
+# 2. Write TASK.md in project root with mastery analysis
+task_content = render_template('TASK-MASTERY-TEMPLATE.md', {
+    'complexity_analysis': analyze_task_complexity(task),
+    'delegation_hints': generate_delegation_hints(task),
+    **task_data
+})
 write_file(f"{project_path}/TASK.md", task_content)
 
-# 3. Spawn Claude Code
+# 3. Spawn Claude Code with mastery delegation capability
 subprocess.run([
     "claude", 
     "--allowedTools", "Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "Fetch(*)",
-    "Follow TASK.md and complete the task. Commit your changes when done."
+    "Analyze TASK.md complexity. If high complexity OR specialized domain, delegate to appropriate mastery agent using claude --agent. Otherwise execute directly. Commit when done."
 ], cwd=project_path)
+```
+
+#### Mastery Agent Selection Rules
+When dispatching to mastery-enabled agents, include delegation hints:
+
+```python
+def generate_delegation_hints(task):
+    complexity = estimate_complexity(task.description, task.files_to_modify)
+    domain = classify_domain(task.requirements)
+    
+    if complexity == 'high' or len(task.files_to_modify) > 5:
+        return 'senior-dev'
+    elif domain == 'frontend':
+        return 'frontend-dev' 
+    elif domain == 'backend':
+        return 'backend-dev'
+    elif complexity == 'low':
+        return 'junior-dev'
+    else:
+        return 'direct'  # Handle without delegation
 ```
 
 ### Step 6: Update Task Status
@@ -276,8 +301,16 @@ All agents receive work via standardized task files following `templates/TASK-TE
 The monitoring cron checks:
 1. **Agent Status**: Poll session/process status
 2. **Task Updates**: Check for completion signals
-3. **Error Handling**: Detect failures and reassign
-4. **Chain Logic**: In Full Speed, dispatch next task automatically
+3. **Mastery Delegation**: Detect when Claude Code delegates to sub-agents
+4. **Error Handling**: Detect failures and reassign
+5. **Chain Logic**: In Full Speed, dispatch next task automatically
+
+### Mastery Delegation Tracking
+When monitoring mastery-enabled agents:
+- **Check session logs** for delegation commands (`claude --agent` calls)
+- **Update delegation chain** in database when sub-delegation detected
+- **Monitor sub-agent progress** through Claude Code session
+- **Escalate if delegation fails** to ensure task doesn't get stuck
 
 ### Output Collection
 Agents report via standardized formats (see agent profiles in examples/).
@@ -300,6 +333,35 @@ Replace these with your actual values:
 - `{your-channel-id}` → Discord/Slack channel for notifications  
 - `{project-workspace}` → Your projects directory
 - `{your-clawdbot-endpoint}` → Webhook endpoint URL
+
+## Claude Code Mastery Integration
+
+### Available Mastery Agents
+The following claude-code-mastery agents are available for delegation:
+
+| Agent | Specialization | Model | Best For |
+|-------|----------------|-------|----------|
+| `senior-dev` | Architecture, complex logic | Sonnet | Large features, refactoring, system design |
+| `junior-dev` | Simple fixes, documentation | Haiku | Bug fixes, docs, unit tests, simple features |
+| `frontend-dev` | React, UI/UX, client-side | Sonnet | UI components, responsive design, interactions |
+| `backend-dev` | APIs, databases, server-side | Sonnet | REST APIs, database design, authentication |
+| `project-manager` | Task breakdown, planning | Sonnet | Multi-component features, sprint planning |
+| `ai-engineer` | LLM integration, ML | Sonnet | AI features, prompt engineering, RAG systems |
+
+### Delegation Workflow
+1. **PM dispatches** task to worker-dev using standard protocol
+2. **worker-dev analyzes** task complexity and domain requirements  
+3. **Delegation decision**: Based on complexity matrix and domain expertise
+4. **Internal delegation**: `claude --agent {chosen-agent} -p "prompt"`
+5. **Monitoring continues**: PM tracks progress through Claude Code session
+6. **Result reporting**: Final results bubble up through delegation chain
+
+### Fallback Strategy
+If mastery delegation fails:
+1. **worker-dev handles directly** (maintains task completion)
+2. **Monitoring detects issues** via session logs
+3. **PM intervention** if needed for complex failures
+4. **Task marked complete** regardless of delegation success/failure
 
 ## Extension Points
 

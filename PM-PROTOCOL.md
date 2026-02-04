@@ -81,7 +81,7 @@ Match task type → agent capabilities:
 
 ### Step 4: Create Task File
 
-Write a detailed task specification to `tasks/TASK-{slug}.md`:
+Write a detailed task specification to `tasks/TASK-{slug}.md`. For mastery-enabled agents, use the enhanced template with complexity analysis:
 
 ```markdown
 # Task: {Title}
@@ -93,12 +93,26 @@ Write a detailed task specification to `tasks/TASK-{slug}.md`:
 - **Target:** {agent_id}
 - **Model:** {from invocation_config}
 
+## Complexity Analysis (for mastery agents)
+- **Estimated Complexity:** {low|medium|high}
+- **Primary Domain:** {frontend|backend|fullstack|architecture|testing}
+- **Lines of Code Estimate:** {<50|50-200|>200}
+- **Suggested Mastery Agent:** {agent-recommendation}
+
 ## Objective
 {Clear, specific goal}
 
 ## Requirements
 1. {Requirement 1}
 2. {Requirement 2}
+
+## Delegation Instructions
+Based on complexity and domain, consider delegating to:
+- **Low complexity** → junior-dev (fast, cost-effective)
+- **High complexity** → senior-dev (architecture, complex logic)
+- **Frontend focus** → frontend-dev (React, UI expertise)
+- **Backend focus** → backend-dev (API, database expertise)
+- **Multi-component** → project-manager (task breakdown)
 
 ## Acceptance Criteria
 - [ ] {Criterion 1}
@@ -110,6 +124,22 @@ Write a detailed task specification to `tasks/TASK-{slug}.md`:
 ## Project Location
 `{absolute path to project}`
 ```
+
+### Step 5: Invoke Agent
+
+Based on `invocation_method`:
+
+### Claude Code Mastery Integration
+
+When dispatching to claude_code agents with mastery capability (like worker-dev):
+
+1. **Include complexity analysis** in the task file using the TASK-MASTERY-TEMPLATE.md format
+2. **Add delegation instructions** based on task domain and complexity
+3. **Monitor for internal delegation** via session logs
+4. **Update delegation tracking** when sub-delegation is detected
+
+The multi-tier delegation chain works as follows:
+**MC PM** → **worker-dev (Claude Code session)** → **mastery agent (senior-dev/junior-dev/etc)**
 
 ### Step 5: Invoke Agent
 
