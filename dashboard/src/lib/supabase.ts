@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Types for our database
 
@@ -245,7 +246,11 @@ export interface AgentSession {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use SSR-aware browser client so auth session (cookies) are attached to every request.
+// This ensures RLS policies see auth.uid() correctly.
+export const supabase = typeof window !== 'undefined'
+  ? createBrowserClient(supabaseUrl, supabaseAnonKey)
+  : createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper functions
 export async function getProjects() {
