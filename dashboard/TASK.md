@@ -1,107 +1,41 @@
-# 🎯 Mission Control Dashboard — Build Task
+# TASK: Fix RLS — authenticated users see 0 projects
 
-## Context
-You're continuing a Next.js dashboard build. Phase 1 is done (Kanban, basic views). 
-Now build Phase 2 features.
+## Problem
+After enabling Supabase Auth + RLS, logged-in users see no projects. The debug endpoint at `/api/debug-auth` confirms:
+- User IS authenticated (auth.uid() returns correct UUID)
+- Service role sees 6 projects (bypasses RLS)
+- Authenticated user query returns [] (no error, just empty)
+- auth_uid_check SECURITY DEFINER function shows project_count: 6 — data matches
 
-**Supabase is already configured** in `.env.local` and `src/lib/supabase.ts`.
+## What's been done
+1. RLS enabled on projects, tasks, sprints, activity_log, proposals, profiles, project_members
+2. Policies created (users_view_projects FOR SELECT, admins_modify_projects FOR ALL)
+3. owner_id set on all projects to the user's UUID
+4. GRANT SELECT ON projects TO authenticated, anon; (and similar for other tables) — executed but still not working
 
-## Your Mission: Sprint 2.1 Features
+## Root cause hypothesis
+The GRANT statements may not have been applied correctly, or there's a policy conflict. Possibly the `admins_modify_projects FOR ALL` policy interferes with SELECT, or the grants aren't taking effect.
 
-Build these 6 features in order:
+## What to do
+1. Connect to Supabase and diagnose why authenticated role can't SELECT from projects despite policies
+2. The Supabase URL and keys are in `.env.local` (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)
+3. You can run SQL via the Supabase Management API or create RPC functions
+4. Fix the issue so that `SELECT * FROM projects` returns rows for authenticated users
+5. Test by running `npm run dev -- -p 3001` and checking http://localhost:3001/api/debug-auth (sign in first at /login with yajatns@gmail.com)
+6. Also verify the dashboard homepage loads projects
 
-### 1. List View Component
-- Jira-style sortable table for tasks
-- Columns: Title, Status, Assignee, Priority, Created
-- Click row → opens task detail (side panel later)
-- Add toggle between List View / Kanban View
+## Key files
+- `supabase/migrations/20260204_auth_system.sql` — the migration with all policies
+- `src/lib/supabase.ts` — client (uses Proxy to pick browser vs server client)
+- `src/app/api/debug-auth/route.ts` — debug endpoint
+- `src/middleware.ts` — auth middleware (excludes /api/ routes)
 
-### 2. Command Palette (Cmd+K)
-- Global keyboard shortcut `Cmd+K` or `Ctrl+K`
-- Search tasks by title
-- Quick actions: Create task, Go to project, Switch view
-- Use shadcn/ui Command component
+## Supabase details
+- URL: https://emsivxzsrkovjrrpquki.supabase.co
+- Yajat's user ID: 1c9424ee-495f-49db-a3ae-39ba97fd6576
+- All projects have owner_id = 1c9424ee-495f-49db-a3ae-39ba97fd6576
 
-### 3. Quick Filters
-- Filter bar with chips for: Status, Assignee, Type
-- Multiple selections allowed
-- Clear all button
-- Filters persist in URL params
-
-### 4. Task Side Panel
-- Clicking a task slides in a detail panel from right
-- Shows full task details + edit form
-- Can close with X or Escape
-- No page navigation (stays on list/kanban)
-
-### 5. Inline Editing
-- Click task title → becomes editable input
-- Click assignee → dropdown to change
-- Click status → dropdown to change
-- Auto-saves on blur
-
-### 6. Project Progress Indicator
-- Shows % complete for project
-- Based on tasks done vs total
-- Visual progress bar on project page
-
-## Tech Stack
-- Next.js 14+ (App Router)
-- TypeScript
-- Tailwind CSS
-- shadcn/ui components (install as needed: `npx shadcn@latest add <component>`)
-- Supabase client already configured
-
-## Supabase Schema Reference
-
-```sql
--- Tasks table (key fields)
-tasks (
-  id UUID,
-  title TEXT,
-  description TEXT,
-  status TEXT, -- backlog, assigned, in_progress, blocked, review, done, cancelled
-  task_type TEXT, -- development, research, design, testing, documentation, business, marketing, other
-  priority INTEGER, -- 0-3
-  assigned_to TEXT, -- agent id
-  project_id UUID,
-  created_at TIMESTAMPTZ
-)
-
--- Agents table
-agents (
-  id TEXT PRIMARY KEY,
-  display_name TEXT,
-  role TEXT,
-  agent_type TEXT -- pm, specialist
-)
-
--- Projects table
-projects (
-  id UUID,
-  name TEXT,
-  status TEXT,
-  current_pm_id TEXT
-)
-```
-
-## File Structure
-Put new components in:
-- `src/components/ui/` — shadcn components
-- `src/components/` — app components
-- `src/app/` — pages
-
-## Acceptance Criteria
-- [ ] List view shows all tasks in sortable table
-- [ ] Cmd+K opens search/command palette
-- [ ] Can filter by status/assignee/type
-- [ ] Clicking task opens side panel (no page nav)
-- [ ] Can edit task title/assignee/status inline
-- [ ] Project page shows progress bar
-
-## Notes
-- Real-time updates are nice-to-have (basic CRUD is priority)
-- Mobile responsive is nice-to-have
-- Dark mode already works via Tailwind
-
-**Start with #1 (List View), test it works, then continue to #2, etc.**
+## Definition of Done
+- Authenticated user sees their projects on the dashboard
+- `/api/debug-auth` shows authProjectsCount > 0 when logged in
+- `npm run build` still passes
