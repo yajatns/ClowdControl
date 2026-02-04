@@ -1,17 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Settings, Save, X, Bell, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings, Save, X, Bell, CheckCircle, XCircle, Loader2, Users, Globe, Lock, Plus, Trash2 } from 'lucide-react';
 import {
   ProjectSettings as ProjectSettingsType,
   ExecutionMode,
   SprintApproval,
   NotificationTypes,
   DEFAULT_NOTIFICATION_TYPES,
+  ProjectMember,
+  Profile,
+  Project,
 } from '@/lib/supabase';
 
 interface ProjectSettingsProps {
   projectId: string;
+  project: Project;
   settings: ProjectSettingsType;
   onSettingsUpdate: (settings: ProjectSettingsType) => void;
   className?: string;
@@ -68,16 +72,99 @@ const notificationTypeLabels: Record<keyof NotificationTypes, string> = {
   sprint_completed: 'Sprint completed',
 };
 
-export function ProjectSettings({ projectId, settings, onSettingsUpdate, className }: ProjectSettingsProps) {
+export function ProjectSettings({ projectId, project, settings, onSettingsUpdate, className }: ProjectSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localSettings, setLocalSettings] = useState<ProjectSettingsType>({
     ...settings,
     notification_webhook_url: settings.notification_webhook_url ?? null,
     notification_types: settings.notification_types ?? DEFAULT_NOTIFICATION_TYPES,
   });
+  const [localVisibility, setLocalVisibility] = useState<'public' | 'private'>(project.visibility);
   const [saving, setSaving] = useState(false);
   const [testingWebhook, setTestingWebhook] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  
+  // Member management state
+  const [members, setMembers] = useState<(ProjectMember & { profile: Profile })[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<Profile[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [newMemberUserId, setNewMemberUserId] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'admin' | 'member' | 'viewer'>('member');
+  const [addingMember, setAddingMember] = useState(false);
+
+  // Load member data when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadMemberData();
+    }
+  }, [isOpen]);
+
+  const loadMemberData = async () => {
+    setLoadingMembers(true);
+    try {
+      // Load current members
+      const membersResponse = await fetch(`/api/projects/${projectId}/members`);
+      if (membersResponse.ok) {
+        const { members: memberData } = await membersResponse.json();
+        setMembers(memberData);
+      }
+
+      // Load available users
+      const usersResponse = await fetch(`/api/projects/${projectId}/members?action=available-users`);
+      if (usersResponse.ok) {
+        const { users } = await usersResponse.json();
+        setAvailableUsers(users);
+      }
+    } catch (error) {
+      console.error('Error loading member data:', error);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!newMemberUserId) return;
+    
+    setAddingMember(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: newMemberUserId,
+          role: newMemberRole,
+        }),
+      });
+
+      if (response.ok) {
+        setNewMemberUserId('');
+        setNewMemberRole('member');
+        await loadMemberData();
+      } else {
+        console.error('Failed to add member');
+      }
+    } catch (error) {
+      console.error('Error adding member:', error);
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/members?user_id=${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await loadMemberData();
+      } else {
+        console.error('Failed to remove member');
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -87,7 +174,10 @@ export function ProjectSettings({ projectId, settings, onSettingsUpdate, classNa
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(localSettings),
+        body: JSON.stringify({
+          ...localSettings,
+          visibility: localVisibility,
+        }),
       });
 
       if (!response.ok) {
@@ -129,6 +219,7 @@ export function ProjectSettings({ projectId, settings, onSettingsUpdate, classNa
       notification_webhook_url: settings.notification_webhook_url ?? null,
       notification_types: settings.notification_types ?? DEFAULT_NOTIFICATION_TYPES,
     });
+    setLocalVisibility(project.visibility);
     setTestResult(null);
     setIsOpen(false);
   };

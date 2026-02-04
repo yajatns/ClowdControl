@@ -294,6 +294,7 @@ function ProjectPageContent() {
               {role === 'admin' && (
                 <ProjectSettings
                   projectId={projectId}
+                  project={project}
                   settings={project.settings}
                   onSettingsUpdate={handleSettingsUpdate}
                 />

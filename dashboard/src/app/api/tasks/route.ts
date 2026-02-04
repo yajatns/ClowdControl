@@ -46,13 +46,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate required fields
-    const { project_id, title, task_type, priority, created_by } = body;
+    const { project_id, title, task_type, priority, created_by, acceptance_criteria } = body;
     
     if (!project_id || !title || !task_type || !priority || !created_by) {
       return NextResponse.json(
         { 
           error: 'Missing required fields',
-          required: ['project_id', 'title', 'task_type', 'priority', 'created_by']
+          required: ['project_id', 'title', 'task_type', 'priority', 'created_by', 'acceptance_criteria']
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate acceptance_criteria is present and non-empty
+    if (!acceptance_criteria || (Array.isArray(acceptance_criteria) && acceptance_criteria.length === 0)) {
+      return NextResponse.json(
+        { 
+          error: 'acceptance_criteria is required and must be a non-empty array'
         },
         { status: 400 }
       );
@@ -105,6 +115,7 @@ export async function POST(request: NextRequest) {
       priority,
       created_by,
       sprint_id: sprintId,
+      acceptance_criteria,
     });
 
     return NextResponse.json(newTask, { status: 201 });

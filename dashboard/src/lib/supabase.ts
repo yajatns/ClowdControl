@@ -85,6 +85,7 @@ export interface Project {
   status: 'planning' | 'active' | 'paused' | 'completed' | 'archived';
   owner_type: 'human' | 'agent' | 'team';
   owner_ids: string[];
+  owner_id: string; // Primary owner
   current_pm_id: string | null;
   created_at: string;
   updated_at: string;
@@ -93,6 +94,26 @@ export interface Project {
   settings: ProjectSettings;
   token_budget: number;
   tokens_used: number;
+  visibility: 'public' | 'private';
+}
+
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: 'admin' | 'member' | 'viewer';
+  invited_by: string | null;
+  joined_at: string;
+  created_at: string;
+}
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: 'admin' | 'user';
+  created_at: string;
 }
 
 export interface Sprint {
@@ -776,6 +797,7 @@ export async function createTask(task: {
   priority: number;
   created_by: string;
   sprint_id?: string | null;
+  acceptance_criteria: string[];
   tags?: string[];
 }) {
   const { data, error } = await supabase
@@ -788,6 +810,7 @@ export async function createTask(task: {
       priority: task.priority,
       created_by: task.created_by,
       sprint_id: task.sprint_id || null,
+      acceptance_criteria: task.acceptance_criteria,
       status: 'backlog',
       complexity: 'medium', // default
       tokens_consumed: 0,
@@ -858,6 +881,98 @@ export async function updateProjectSettings(
     .eq('id', projectId);
 
   if (error) throw error;
+}
+
+// ============================================
+// Project Visibility & Member Management
+// ============================================
+
+export async function updateProjectVisibility(
+  projectId: string,
+  visibility: 'public' | 'private'
+): Promise<void> {
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      visibility,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', projectId);
+
+  if (error) throw error;
+}
+
+export async function getProjectMembers(projectId: string): Promise<(ProjectMember & { profile: Profile })[]> {
+  const { data, error } = await supabase
+    .from('project_members')
+    .select(`
+      *,
+      profile:profiles(id, email, full_name, avatar_url)
+    `)
+    .eq('project_id', projectId)
+    .order('joined_at', { ascending: true });
+
+  if (error) throw error;
+  return data as (ProjectMember & { profile: Profile })[];
+}
+
+export async function getAvailableUsers(projectId: string): Promise<Profile[]> {
+  // Get users who are not already members of this project
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, email, full_name, avatar_url, role, created_at')
+    .not('id', 'in', `(
+      SELECT user_id FROM project_members WHERE project_id = '${projectId}'
+    )`);
+
+  if (error) throw error;
+  return data as Profile[];
+}
+
+export async function addProjectMember(member: {
+  project_id: string;
+  user_id: string;
+  role: 'admin' | 'member' | 'viewer';
+  invited_by?: string;
+}): Promise<ProjectMember> {
+  const { data, error } = await supabase
+    .from('project_members')
+    .insert({
+      ...member,
+      joined_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as ProjectMember;
+}
+
+export async function removeProjectMember(projectId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('project_members')
+    .delete()
+    .eq('project_id', projectId)
+    .eq('user_id', userId);
+
+  if (error) throw error;
+}
+
+export async function updateMemberRole(
+  projectId: string,
+  userId: string,
+  role: 'admin' | 'member' | 'viewer'
+): Promise<ProjectMember> {
+  const { data, error } = await supabase
+    .from('project_members')
+    .update({ role })
+    .eq('project_id', projectId)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as ProjectMember;
 }
 
 export async function startNextTask(projectId: string): Promise<Task | null> {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateProjectSettings, getProject, ProjectSettings } from '@/lib/supabase';
+import { updateProjectSettings, getProject, ProjectSettings, updateProjectVisibility } from '@/lib/supabase';
 import { notifyPM } from '@/lib/discord-notify';
 
 export async function POST(
@@ -8,7 +8,8 @@ export async function POST(
 ) {
   try {
     const { id: projectId } = await params;
-    const settingsUpdate = await request.json() as Partial<ProjectSettings>;
+    const requestBody = await request.json();
+    const { visibility, ...settingsUpdate } = requestBody as Partial<ProjectSettings> & { visibility?: 'public' | 'private' };
 
     if (!projectId) {
       return NextResponse.json(
@@ -17,10 +18,15 @@ export async function POST(
       );
     }
 
-    // Get current project to compare execution mode changes
+    // Get current project to compare changes
     const project = await getProject(projectId);
     const currentMode = project.settings.execution_mode;
     const newMode = settingsUpdate.execution_mode;
+
+    // Update visibility if provided
+    if (visibility && visibility !== project.visibility) {
+      await updateProjectVisibility(projectId, visibility);
+    }
 
     // Update the settings
     await updateProjectSettings(projectId, settingsUpdate);
