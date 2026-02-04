@@ -1,14 +1,62 @@
 # PM Protocol — Mission Control Agent Dispatch
 
-**Version:** 1.1  
-**Date:** February 3, 2026  
+**Version:** 1.2  
+**Date:** February 4, 2026  
 **Applies to:** Any PM agent (Chhotu, Cheenu, or future PMs)
 
 ---
 
 ## Overview
 
-When a task needs execution in Mission Control, the PM follows a structured dispatch protocol. This ensures work flows through the proper agent pipeline — never done ad-hoc by the PM itself (unless no suitable specialist exists).
+When a task needs execution in Clowd-Control, the PM follows a structured dispatch protocol. This ensures work flows through the proper agent pipeline — never done ad-hoc by the PM itself (unless no suitable specialist exists).
+
+---
+
+## Multi-PM Architecture
+
+Clowd-Control supports multiple PMs operating on the same project. All PMs share:
+
+- **Worker roster** — Same Supabase `agents` table, same workers available to everyone
+- **Dispatch protocol** — Every PM follows this document identically
+- **Task board** — Same sprints, same backlog, same Supabase data
+
+### PM Capabilities
+Each PM's capabilities are tracked in the `agents` table. When assigning tasks to a PM:
+
+| PM | Capabilities | Can Spawn Workers? | Infra |
+|----|-------------|-------------------|-------|
+| Chhotu | project_management, coding, analysis, orchestration | Yes (Claude Code + sessions_spawn) | Yajat's Mac mini |
+| Cheenu | project_management, research, coding, writing, analysis | Yes (sessions_spawn; Claude Code if local install) | Cheenu's machine |
+
+### PM Re-Delegation Rule
+
+**When a PM receives a task, they decide: do it myself or delegate?**
+
+```
+PM receives assigned task
+  → Is it PM-level work? (planning, review, coordination)
+    → YES: PM does it directly
+  → Is it specialist work? (coding, QA, design, content)
+    → YES: PM follows dispatch protocol (Steps 1-8) to delegate to a worker
+    → Worker executes, PM monitors
+  → Result flows back through the PM who dispatched it
+```
+
+**PMs should delegate by default.** The whole point of having workers is that PMs orchestrate, not execute. A PM should only do the work itself if:
+- No suitable worker exists for the task type
+- The task is inherently PM-level (sprint planning, reviews, stakeholder comms)
+- It's faster to do it than to write the spec (< 5 min of work)
+
+### Task Ownership vs Execution
+- **assigned_to** = who is *responsible* (could be a PM)
+- If the PM re-delegates, the task stays assigned to the PM, but the PM tracks which worker actually executed it
+- The PM is responsible for verifying the worker's output before marking done
+
+### Cross-PM Coordination
+When multiple PMs are active on the same sprint:
+- Check `assigned_to` before picking up backlog tasks — don't grab work another PM is handling
+- Use `agent_messages` table for async coordination between PMs
+- If both PMs are online, one should take lead on the sprint (avoid duplicate dispatches)
 
 ---
 
