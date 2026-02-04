@@ -219,10 +219,12 @@ Each mode has a specific PM behavior. These are **mandatory** — not suggestion
   4. Only stops on: blocker, budget limit, or no more backlog tasks
   5. When sprint is complete → post summary to #disclawd-mission-control, disable cron
 
+> **⚠️ QA Gate Rule (Mandatory):** Tasks with `task_type: "testing"` or `task_type: "qa"` are ALWAYS dispatched LAST in a sprint. The PM must hold QA tasks in backlog until all other non-QA backlog tasks are done or in-progress. This ensures QA validates the final state of the sprint, not intermediate work. If a QA task is the only backlog item remaining, dispatch it.
+
 #### Background Mode
 - **30-min task processing cron** that:
   1. Checks active sprint for backlog tasks
-  2. Picks highest-priority backlog task
+  2. Picks highest-priority backlog task (respecting QA Gate Rule — QA tasks go last)
   3. Dispatches it to the right agent (Steps 3-6)
   4. Monitors spawned agent (sub-checks every 5 min within the 30-min window)
   5. When agent finishes → marks task done, waits for next 30-min cycle
