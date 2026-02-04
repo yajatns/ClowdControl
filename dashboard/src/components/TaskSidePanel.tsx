@@ -23,25 +23,21 @@ import { ShadowingBadge } from '@/components/ShadowingBadge';
 import { ShadowingSelector } from '@/components/ShadowingSelector';
 import { ReviewStatusBadge } from '@/components/ReviewStatusBadge';
 import { formatTokens } from '@/lib/agents';
+import { calculateTaskCost, formatCost } from '@/lib/cost-calculator';
 
 // Extended task type that may include estimated_hours from the DB
 interface TaskWithEstimate extends Task {
   estimated_hours?: number | null;
 }
 
-// Blended cost per 1M tokens (sonnet default)
-const DEFAULT_BLENDED_COST_PER_1M = 9;
-
 function estimateTokensFromHours(hours: number): number {
   // Rough heuristic: 1 hour of agent work ~ 200K tokens
   return Math.round(hours * 200_000);
 }
 
-function formatCostInline(tokens: number): string {
-  const cost = (tokens / 1_000_000) * DEFAULT_BLENDED_COST_PER_1M;
-  if (cost < 0.01) return '<$0.01';
-  if (cost < 1) return `$${cost.toFixed(2)}`;
-  return `$${cost.toFixed(2)}`;
+function formatCostFromTokens(tokens: number): string {
+  const breakdown = calculateTaskCost({ tokens_consumed: tokens });
+  return formatCost(breakdown.totalCost);
 }
 
 function TokenUsageDisplay({ tokens, estimatedTokens: directEstimate, estimatedHours }: { tokens: number; estimatedTokens?: number | null; estimatedHours?: number | null }) {
@@ -67,14 +63,14 @@ function TokenUsageDisplay({ tokens, estimatedTokens: directEstimate, estimatedH
       <p className={`text-sm font-medium tabular-nums ${colorClass}`}>
         {formatTokens(tokens)}
         <span className="ml-1.5 text-xs font-normal text-zinc-400">
-          (~{formatCostInline(tokens)})
+          (~{formatCostFromTokens(tokens)})
         </span>
       </p>
       {estimatedTokens != null && estimatedTokens > 0 && (
         <>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
             Est: {formatTokens(estimatedTokens)}
-            <span className="ml-1 text-zinc-400">(~{formatCostInline(estimatedTokens)})</span>
+            <span className="ml-1 text-zinc-400">(~{formatCostFromTokens(estimatedTokens)})</span>
           </p>
           {ratio !== null && (
             <div className="flex items-center gap-2">
