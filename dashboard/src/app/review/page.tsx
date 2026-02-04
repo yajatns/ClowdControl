@@ -72,7 +72,7 @@ export default function ReviewPage() {
               className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 flex items-center gap-1"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+              Back to Mission Control
             </Link>
             <button
               onClick={toggleTheme}

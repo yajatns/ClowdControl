@@ -14,12 +14,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Bug, X } from 'lucide-react';
+import { Bug } from 'lucide-react';
 
 interface BugFormData {
   title: string;
   description: string;
-  severity: '1' | '2' | '3' | '4';
+  severity: '1' | '2' | '3';
 }
 
 export function BugReportButton() {
@@ -36,7 +36,6 @@ export function BugReportButton() {
     '1': 'P1/Critical',
     '2': 'P2/High',
     '3': 'P3/Medium',
-    '4': 'P4/Low',
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +56,7 @@ export function BugReportButton() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: formData.title.trim(),
+          title: `[BUG] ${formData.title.trim()}`,
           description: formData.description.trim() || undefined,
           priority: parseInt(formData.severity),
           task_type: 'bug',
