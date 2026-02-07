@@ -266,9 +266,20 @@ export interface AgentSession {
 }
 
 // Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Validate required env vars - fail fast with clear message
+if (!supabaseUrl || !supabaseAnonKey) {
+  const missing = [];
+  if (!supabaseUrl) missing.push('NEXT_PUBLIC_SUPABASE_URL');
+  if (!supabaseAnonKey) missing.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  throw new Error(
+    `Supabase client failed to initialize: Missing required environment variables: ${missing.join(', ')}. ` +
+    `Ensure these are set in .env.local or your deployment environment.`
+  );
+}
 
 // Returns the correct client for the current context:
 // - Browser: SSR-aware client with auth cookies (RLS sees auth.uid())
